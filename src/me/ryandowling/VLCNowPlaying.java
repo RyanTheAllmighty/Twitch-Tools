@@ -23,8 +23,7 @@ import org.json.simple.parser.ParseException;
 
 public class VLCNowPlaying {
 
-    public static void main(String[] args) throws FileNotFoundException,
-            UnsupportedEncodingException {
+    public static void main(String[] args) {
         if (args.length != 1) {
             System.out.println("1 Argument Is Expected. Time Delay");
             System.exit(0);
@@ -59,17 +58,29 @@ public class VLCNowPlaying {
                 System.out.println("Playing " + nowPlayingSong + " by " + nowPlayingArtist);
             } catch (ParseException e) {
                 e.printStackTrace();
+                System.exit(0);
             }
 
-            PrintWriter writer1 = new PrintWriter(nowPlayingFile, "UTF-8");
-            writer1.println("'" + nowPlayingSong + "' by " + nowPlayingArtist);
-            writer1.close();
+            PrintWriter writer1 = null;
+            try {
+                writer1 = new PrintWriter(nowPlayingFile, "UTF-8");
+                writer1.println("'" + nowPlayingSong + "' by " + nowPlayingArtist);
+            } catch (FileNotFoundException e1) {
+                e1.printStackTrace();
+                System.exit(0);
+            } catch (UnsupportedEncodingException e1) {
+                e1.printStackTrace();
+                System.exit(0);
+            } finally {
+                writer1.close();
+            }
 
             try {
                 System.out.println("Sleeping For " + secondsToWait + " seconds");
                 Thread.sleep(secondsToWait * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                System.exit(0);
             }
 
             System.out.println("--------------------------------------");

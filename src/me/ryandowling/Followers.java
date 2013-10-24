@@ -24,8 +24,7 @@ import org.json.simple.parser.ParseException;
 
 public class Followers {
 
-    public static void main(String[] args) throws FileNotFoundException,
-            UnsupportedEncodingException {
+    public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("2 Arguments Are Expected. Twitch Name and Time Delay");
             System.exit(0);
@@ -64,13 +63,23 @@ public class Followers {
                 e.printStackTrace();
             }
 
-            PrintWriter writer1 = new PrintWriter(numberOfFollowersFile, "UTF-8");
-            writer1.println(numberOfFollowers);
-            writer1.close();
-
-            PrintWriter writer2 = new PrintWriter(latestFollowerFile, "UTF-8");
-            writer2.println(latestFollower);
-            writer2.close();
+            PrintWriter writer1 = null;
+            PrintWriter writer2 = null;
+            try {
+                writer1 = new PrintWriter(numberOfFollowersFile, "UTF-8");
+                writer1.println(numberOfFollowers);
+                writer2 = new PrintWriter(latestFollowerFile, "UTF-8");
+                writer2.println(latestFollower);
+            } catch (FileNotFoundException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            } catch (UnsupportedEncodingException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            } finally {
+                writer1.close();
+                writer2.close();
+            }
 
             try {
                 System.out.println("Sleeping For " + secondsToWait + " seconds");
