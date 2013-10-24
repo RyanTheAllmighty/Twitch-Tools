@@ -29,6 +29,7 @@ import javax.sound.sampled.Port;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 public class MicrophoneStatus {
 
@@ -40,22 +41,23 @@ public class MicrophoneStatus {
     private PopupMenu menu;
     private MenuItem item1;
     private TrayIcon trayIcon;
+    private int delay;
 
-    public MicrophoneStatus() {
+    public MicrophoneStatus(int delay) {
+        this.delay = delay;
         initComponents();
-        frame.setSize(300, 300);
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
     private void initComponents() {
-        frame = new JFrame("Frame Test");
+        frame = new JFrame("Microphone Status");
 
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
             unknownIcon = getImage("/sound_unknown.png");
             normalIcon = getImage("/sound.png");
             mutedIcon = getImage("/sound_mute.png");
-            menu = new PopupMenu();
+            menu = new PopupMenu("Menu");
             item1 = new MenuItem("Exit");
             menu.add(item1);
 
@@ -70,29 +72,36 @@ public class MicrophoneStatus {
             try {
                 sysTray.add(trayIcon);
             } catch (AWTException e) {
-                System.out.println(e.getMessage());
+                e.printStackTrace();
+                System.exit(0);
             }
-            while (true) {
-                if (isMuted() == 1) {
-                    trayIcon.setImage(mutedIcon);
-                } else if (isMuted() == 0) {
-                    trayIcon.setImage(normalIcon);
-                } else {
-                    trayIcon.setImage(unknownIcon);
+            new Timer(delay, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    if (isMuted() == 1) {
+                        trayIcon.setImage(mutedIcon);
+                    } else if (isMuted() == 0) {
+                        trayIcon.setImage(normalIcon);
+                    } else {
+                        trayIcon.setImage(unknownIcon);
+                    }
                 }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
-            }
+            }).start();
+            ;
+        } else {
+            System.err.println("System Tray is not supported!");
+            System.exit(0);
         }
     }
 
     public static void main(String[] args) {
+        if (args.length != 1) {
+            System.err.println("1 Argument Is Expected. Time Delay");
+            System.exit(0);
+        }
+        final int delay = Integer.parseInt(args[0]);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new MicrophoneStatus();
+                new MicrophoneStatus(delay);
             }
         });
     }

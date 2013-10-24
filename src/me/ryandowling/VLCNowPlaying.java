@@ -25,7 +25,7 @@ public class VLCNowPlaying {
 
     public static void main(String[] args) {
         if (args.length != 1) {
-            System.out.println("1 Argument Is Expected. Time Delay");
+            System.err.println("1 Argument Is Expected. Time Delay");
             System.exit(0);
         }
         int secondsToWait = Integer.parseInt(args[0]);
@@ -35,11 +35,11 @@ public class VLCNowPlaying {
         String nowPlayingArtist = "";
 
         while (true) {
-            System.out.println("Getting Information From VLC Web Interface");
+            System.err.println("Getting Information From VLC Web Interface");
             try {
                 vlcInfo = Utils.urlToString("http://localhost:8080/requests/status.json");
             } catch (ConnectException e) {
-                System.out
+                System.err
                         .println("Couldn't Connect To Web Interface! Make Sure It's Enabled And VLC Is Open!");
                 System.exit(0);
             } catch (IOException e) {

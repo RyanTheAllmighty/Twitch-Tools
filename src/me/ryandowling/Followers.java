@@ -26,7 +26,7 @@ public class Followers {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.out.println("2 Arguments Are Expected. Twitch Name and Time Delay");
+            System.err.println("2 Arguments Are Expected. Twitch Name and Time Delay");
             System.exit(0);
         }
         String username = args[0];
@@ -38,12 +38,12 @@ public class Followers {
         long numberOfFollowers = 0;
 
         while (true) {
-            System.out.println("Getting Information From Twitch API");
+            System.err.println("Getting Information From Twitch API");
             try {
                 followerInformation = Utils.urlToString("https://api.twitch.tv/kraken/channels/"
                         + username + "/follows?direction=DESC&limit=1&offset=0");
             } catch (ConnectException e) {
-                System.out.println("Couldn't Connect To Twitch API!");
+                System.err.println("Couldn't Connect To Twitch API!");
                 System.exit(0);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -71,11 +71,11 @@ public class Followers {
                 writer2 = new PrintWriter(latestFollowerFile, "UTF-8");
                 writer2.println(latestFollower);
             } catch (FileNotFoundException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
+                System.exit(0);
             } catch (UnsupportedEncodingException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
+                System.exit(0);
             } finally {
                 writer1.close();
                 writer2.close();

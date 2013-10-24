@@ -7,7 +7,7 @@ Twitch Tools is a set of Java applicaions which I use personally when streaming 
 
 - Followers.java writes the username of your latest follower and the total number of followers to seperate .txt files for reading in with OBS (Pass in 2 arguments, Username and the wait time in between checks in seconds)
 - VLCNowPlaying.java writes the details of the currently playing song in VLC to a .txt file for reading in with OBS (Pass in 1 argument, the wait time in between checks in seconds)
-- MicrophoneStatus.java gets the status of your Microphone and shows a icon in your taskbar depending on if your microphone is muted or not (No Arguments)
+- MicrophoneStatus.java gets the status of your Microphone and shows a icon in your taskbar depending on if your microphone is muted or not (Pass in 1 argument, the wait time in between checks in milliseconds)
 
 ### Coding Standards
 
