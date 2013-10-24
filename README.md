@@ -13,6 +13,10 @@ Twitch Tools is a set of Java applicaions which I use personally when streaming 
 
 Please keep all line lengths to 100 characters and use 4 spaces rather than tab characters
 
+### Downloads
+
+TwitchTools.jar: https://dl.dropboxusercontent.com/u/32912245/TwitchTools.jar
+
 ### Usage
 
 To use these tools simply create a runnable JAR and point it to the TwitchTools.java file as the Main Class and pass in the name of the tool to run and any command line arguments for that tool
