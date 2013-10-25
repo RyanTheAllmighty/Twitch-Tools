@@ -55,7 +55,7 @@ public class MicrophoneStatus {
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
             unknownIcon = getImage("/sound_unknown.png");
-            normalIcon = getImage("/sound.png");
+            normalIcon = getImage("/sound_on.png");
             mutedIcon = getImage("/sound_mute.png");
             menu = new PopupMenu("Menu");
             item1 = new MenuItem("Exit");
