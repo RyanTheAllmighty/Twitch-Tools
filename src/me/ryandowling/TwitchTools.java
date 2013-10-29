@@ -22,7 +22,7 @@ public class TwitchTools {
             if (args[0].equalsIgnoreCase("VLCNowPlaying") || args[0].equalsIgnoreCase("Followers")
                     || args[0].equalsIgnoreCase("MicrophoneStatus")) {
                 if (args[0].equalsIgnoreCase("VLCNowPlaying")) {
-                    if (args.length == 2) {
+                    if (args.length == 2 || args.length == 3) {
                         VLCNowPlaying.main(Arrays.copyOfRange(args, 1, args.length));
                     } else {
                         System.out.println("Invalid number of arguments specified!");

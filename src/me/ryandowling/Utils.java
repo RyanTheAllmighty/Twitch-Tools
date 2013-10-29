@@ -16,13 +16,21 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
+import sun.misc.BASE64Encoder;
+
 public class Utils {
 
-    public static String urlToString(String url) throws IOException  {
+    public static String urlToString(String url, String username, String password)
+            throws IOException {
         StringBuilder response = null;
         URL urll = new URL(url);
         URLConnection connection = urll.openConnection();
         connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.2; WOW64)");
+        if (username != null && password != null) {
+            String login = username + ":" + password;
+            String encodedLogin = new BASE64Encoder().encode(login.getBytes());
+            connection.setRequestProperty("Authorization", "Basic " + encodedLogin);
+        }
         connection.setConnectTimeout(5000);
         BufferedReader in;
         in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
@@ -33,6 +41,10 @@ public class Utils {
             response.append(inputLine);
         in.close();
         return response.toString();
+    }
+
+    public static String urlToString(String url) throws IOException {
+        return urlToString(url, null, null);
     }
 
 }

@@ -24,7 +24,7 @@ import org.json.simple.parser.ParseException;
 public class VLCNowPlaying {
 
     public static void main(String[] args) {
-        if (args.length != 1) {
+        if (args.length == 0) {
             System.err.println("1 Argument Is Expected. Time Delay");
             System.exit(0);
         }
@@ -37,7 +37,12 @@ public class VLCNowPlaying {
         while (true) {
             System.err.println("Getting Information From VLC Web Interface");
             try {
-                vlcInfo = Utils.urlToString("http://localhost:8080/requests/status.json");
+                if (args.length == 2) {
+                    vlcInfo = Utils.urlToString("http://localhost:8080/requests/status.json", "",
+                            args[1]);
+                } else {
+                    vlcInfo = Utils.urlToString("http://localhost:8080/requests/status.json");
+                }
             } catch (ConnectException e) {
                 System.err
                         .println("Couldn't Connect To Web Interface! Make Sure It's Enabled And VLC Is Open!");
