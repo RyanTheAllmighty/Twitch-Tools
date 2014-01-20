@@ -31,7 +31,10 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-public class MicrophoneStatus {
+import com.melloware.jintellitype.HotkeyListener;
+import com.melloware.jintellitype.JIntellitype;
+
+public class MicrophoneStatus implements HotkeyListener {
 
     private JFrame frame;
     private Image unknownIcon;
@@ -42,8 +45,13 @@ public class MicrophoneStatus {
     private MenuItem item1;
     private TrayIcon trayIcon;
     private int delay;
+    private JIntellitype intelliType;
 
     public MicrophoneStatus(int delay) {
+        this.intelliType = JIntellitype.getInstance();
+        this.intelliType.registerHotKey(1, JIntellitype.MOD_CONTROL + JIntellitype.MOD_ALT,
+                (int) 'B');
+        this.intelliType.addHotKeyListener(this);
         this.delay = delay;
         initComponents();
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
@@ -131,7 +139,7 @@ public class MicrophoneStatus {
                     CompoundControl cc = (CompoundControl) lineIn.getControls()[0];
                     Control[] controls = cc.getMemberControls();
                     for (Control c : controls) {
-                        if (c instanceof BooleanControl) {
+                        if (c.getType() == BooleanControl.Type.MUTE) {
                             return (((BooleanControl) c).getValue()) ? 1 : 0;
                         }
                     }
@@ -141,5 +149,43 @@ public class MicrophoneStatus {
             }
         }
         return -1;
+
+    }
+
+    public void muteMicrophone() {
+        Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
+        for (Mixer.Info info : mixerInfos) {
+            Mixer mixer = AudioSystem.getMixer(info);
+            int maxLines = mixer.getMaxLines(Port.Info.MICROPHONE);
+            Port lineIn = null;
+            if (maxLines > 0) {
+                try {
+                    lineIn = (Port) mixer.getLine(Port.Info.MICROPHONE);
+                    lineIn.open();
+                    CompoundControl cc = (CompoundControl) lineIn.getControls()[0];
+                    Control[] controls = cc.getMemberControls();
+                    for (Control c : controls) {
+                        if (c.getType() == BooleanControl.Type.MUTE) {
+                            if (((BooleanControl) c).getValue()) {
+                                ((BooleanControl) c).setValue(false); // Mute it
+                            } else {
+                                ((BooleanControl) c).setValue(true); // Mute it
+                            }
+                            return;
+                        }
+                    }
+                } catch (Exception ex) {
+                    continue;
+                }
+            }
+        }
+        return;
+    }
+
+    @Override
+    public void onHotKey(int identifier) {
+        if (identifier == 1) {
+            muteMicrophone();
+        }
     }
 }

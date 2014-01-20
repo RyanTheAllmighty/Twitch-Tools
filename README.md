@@ -26,3 +26,5 @@ To use these tools simply create a runnable JAR and point it to the TwitchTools.
 Your free to use this however you please as long as you follow the license
 
 This work is licensed under the GPLv2 License. To view a copy of this license, visit http://www.gnu.org/licenses/gpl-2.0.html.
+
+Global Hot Keys included using the JIntelliType library (https://code.google.com/p/jintellitype/) for Windows Only
