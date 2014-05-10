@@ -36,7 +36,7 @@ public class TwitchTools {
                         System.exit(0);
                     }
                 } else if (args[0].equalsIgnoreCase("MicrophoneStatus")) {
-                    if (args.length == 2) {
+                    if (args.length == 3) {
                         MicrophoneStatus.main(Arrays.copyOfRange(args, 1, args.length));
                     } else {
                         System.out.println("Invalid number of arguments specified!");

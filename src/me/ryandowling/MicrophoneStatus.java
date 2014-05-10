@@ -11,6 +11,9 @@
 package me.ryandowling;
 
 import java.awt.AWTException;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -28,6 +31,7 @@ import javax.sound.sampled.Mixer;
 import javax.sound.sampled.Port;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
@@ -45,20 +49,39 @@ public class MicrophoneStatus implements HotkeyListener {
     private MenuItem item1;
     private TrayIcon trayIcon;
     private int delay;
+    private boolean guiDisplay;
     private JIntellitype intelliType;
 
-    public MicrophoneStatus(int delay) {
+    private JFrame guiFrame;
+    private JPanel guiPanel;
+    private Color unknownColour = Color.YELLOW;
+    private Color normalColour = Color.GREEN;
+    private Color mutedColour = Color.RED;
+    private Dimension guiSize = new Dimension(300, 300);
+
+    public MicrophoneStatus(int delay, boolean guiDisplay) {
         this.intelliType = JIntellitype.getInstance();
         this.intelliType.registerHotKey(1, JIntellitype.MOD_CONTROL + JIntellitype.MOD_ALT,
                 (int) 'B');
         this.intelliType.addHotKeyListener(this);
         this.delay = delay;
+        this.guiDisplay = guiDisplay;
         initComponents();
         frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
     private void initComponents() {
         frame = new JFrame("Microphone Status");
+
+        if (this.guiDisplay) {
+            this.guiFrame = new JFrame();
+            this.guiFrame.setLayout(new BorderLayout());
+            this.guiPanel = new JPanel();
+            this.guiFrame.setContentPane(this.guiPanel);
+            this.guiPanel.setBackground(this.unknownColour);
+            this.guiFrame.setSize(this.guiSize);
+            this.guiFrame.setVisible(true);
+        }
 
         if (SystemTray.isSupported()) {
             sysTray = SystemTray.getSystemTray();
@@ -87,29 +110,42 @@ public class MicrophoneStatus implements HotkeyListener {
                 public void actionPerformed(ActionEvent e) {
                     if (isMuted() == 1) {
                         trayIcon.setImage(mutedIcon);
+                        if (guiDisplay) {
+                            guiPanel.setBackground(mutedColour);
+                        }
                     } else if (isMuted() == 0) {
                         trayIcon.setImage(normalIcon);
+                        if (guiDisplay) {
+                            guiPanel.setBackground(normalColour);
+                        }
                     } else {
                         trayIcon.setImage(unknownIcon);
+                        if (guiDisplay) {
+                            guiPanel.setBackground(unknownColour);
+                        }
                     }
                 }
             }).start();
             ;
         } else {
-            System.err.println("System Tray is not supported!");
-            System.exit(0);
+            System.err.println("System Tray is not supported! Not showing the icon.");
+            if (!this.guiDisplay) {
+                System.exit(1);
+            }
         }
     }
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            System.err.println("1 Argument Is Expected. Time Delay");
+        if (args.length != 2) {
+            System.err
+                    .println("2 Arguments Are Expected. Time Delay and if the gui should be displayed.");
             System.exit(0);
         }
         final int delay = Integer.parseInt(args[0]);
+        final boolean guiDisplay = (Integer.parseInt(args[1]) == 1);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new MicrophoneStatus(delay);
+                new MicrophoneStatus(delay, guiDisplay);
             }
         });
     }
