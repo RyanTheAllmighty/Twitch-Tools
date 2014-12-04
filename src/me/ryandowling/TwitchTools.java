@@ -17,33 +17,44 @@
  */
 package me.ryandowling;
 
+import javax.swing.SwingUtilities;
 import java.util.Arrays;
 
 public class TwitchTools {
 
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Invalid number of arguments specified!");
+            System.err.println("Invalid number of arguments specified!");
             System.exit(0);
         } else if (args.length >= 1 && args.length <= 3) {
             if (args[0].equalsIgnoreCase("Followers") || args[0].equalsIgnoreCase("MicrophoneStatus")) {
                 if (args[0].equalsIgnoreCase("Followers")) {
                     if (args.length == 3) {
-                        Followers.main(Arrays.copyOfRange(args, 1, args.length));
+                        Followers.run(args[1], Integer.parseInt(args[2]));
                     } else {
-                        System.out.println("Invalid number of arguments specified!");
+                        System.err.println("Invalid number of arguments specified!");
                         System.exit(0);
                     }
                 } else if (args[0].equalsIgnoreCase("MicrophoneStatus")) {
                     if (args.length == 3) {
-                        MicrophoneStatus.main(Arrays.copyOfRange(args, 1, args.length));
+                        final int delay = Integer.parseInt(args[1]);
+                        final boolean guiDisplay = Boolean.parseBoolean(args[2]);
+
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                new MicrophoneStatus(delay, guiDisplay);
+                            }
+                        });
                     } else {
-                        System.out.println("Invalid number of arguments specified!");
+                        System.err.println("Invalid number of arguments specified!");
+                        System.err.println("Arguments are: [delay in ms for updates] [if the gui should show]!");
+                        System.err.println("For example: [100] [true]!");
                         System.exit(0);
                     }
                 }
             } else {
-                System.out.println("Invalid tool name specified!");
+                System.err.println("Invalid tool name specified!");
+                System.err.println("Options are: Followers or MicrophoneStatus!");
                 System.exit(0);
             }
         }

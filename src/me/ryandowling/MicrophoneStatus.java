@@ -181,20 +181,6 @@ public class MicrophoneStatus implements HotKeyListener {
         }
     }
 
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            System.err.println("2 Arguments Are Expected. Time Delay and if the gui should be displayed.");
-            System.exit(0);
-        }
-        final int delay = Integer.parseInt(args[0]);
-        final boolean guiDisplay = (Integer.parseInt(args[1]) == 1);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new MicrophoneStatus(delay, guiDisplay);
-            }
-        });
-    }
-
     public Image getImage(String path) {
         URL url = System.class.getResource(path);
 

@@ -30,14 +30,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class Followers {
-
-    public static void main(String[] args) {
-        if (args.length != 2) {
-            System.err.println("2 Arguments Are Expected. Twitch Name and Time Delay");
-            System.exit(0);
-        }
-        String username = args[0];
-        int secondsToWait = Integer.parseInt(args[1]);
+    public static void run(String username, int secondsToWait) {
         File numberOfFollowersFile = new File("followers.txt");
         File latestFollowerFile = new File("latestfollower.txt");
         String followerInformation = null;
@@ -77,15 +70,16 @@ public class Followers {
                 writer1.println(numberOfFollowers);
                 writer2 = new PrintWriter(latestFollowerFile, "UTF-8");
                 writer2.println(latestFollower);
-            } catch (FileNotFoundException e1) {
-                e1.printStackTrace();
-                System.exit(0);
-            } catch (UnsupportedEncodingException e1) {
-                e1.printStackTrace();
+            } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                e.printStackTrace();
                 System.exit(0);
             } finally {
-                writer1.close();
-                writer2.close();
+                if (writer1 != null) {
+                    writer1.close();
+                }
+                if (writer2 != null) {
+                    writer2.close();
+                }
             }
 
             try {

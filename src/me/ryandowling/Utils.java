@@ -27,31 +27,24 @@ import sun.misc.BASE64Encoder;
 
 public class Utils {
 
-    public static String urlToString(String url, String username, String password)
-            throws IOException {
+    public static String urlToString(String url) throws IOException {
         StringBuilder response = null;
         URL urll = new URL(url);
         URLConnection connection = urll.openConnection();
         connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.2; WOW64)");
-        if (username != null && password != null) {
-            String login = username + ":" + password;
-            String encodedLogin = new BASE64Encoder().encode(login.getBytes());
-            connection.setRequestProperty("Authorization", "Basic " + encodedLogin);
-        }
         connection.setConnectTimeout(5000);
         BufferedReader in;
         in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         response = new StringBuilder();
         String inputLine;
 
-        while ((inputLine = in.readLine()) != null)
+        while ((inputLine = in.readLine()) != null) {
             response.append(inputLine);
-        in.close();
-        return response.toString();
-    }
+        }
 
-    public static String urlToString(String url) throws IOException {
-        return urlToString(url, null, null);
+        in.close();
+
+        return response.toString();
     }
 
 }
