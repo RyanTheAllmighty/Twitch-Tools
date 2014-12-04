@@ -300,6 +300,13 @@ public class MicrophoneStatus {
 
     private void loadWindowDetails() {
         this.windowDetails = TwitchTools.settings.getMicrophoneStatus();
+
+        if (this.windowDetails == null || this.windowDetails.getSize() == null || this.windowDetails.getPosition() ==
+                null) {
+            System.err.println("Settings file invalid!");
+            System.exit(1);
+        }
+
         this.guiFrame.setSize(this.windowDetails.getSize());
         this.guiFrame.setLocation(this.windowDetails.getPosition());
     }
