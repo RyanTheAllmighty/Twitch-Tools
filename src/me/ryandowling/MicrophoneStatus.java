@@ -36,7 +36,6 @@ import java.awt.event.WindowEvent;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
@@ -44,12 +43,10 @@ import javax.sound.sampled.CompoundControl;
 import javax.sound.sampled.Control;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.Port;
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
-import javax.swing.WindowConstants;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -66,8 +63,8 @@ public class MicrophoneStatus {
     private Image normalIcon;
     private Image mutedIcon;
     private SystemTray sysTray;
-    private PopupMenu menu;
-    private MenuItem item1;
+    private PopupMenu systemTrayMenu;
+    private MenuItem exitMenuItem;
     private TrayIcon trayIcon;
     private int delay;
     private boolean guiDisplay;
@@ -106,10 +103,9 @@ public class MicrophoneStatus {
         if (this.guiDisplay) {
             this.guiFrame = new JFrame();
             this.guiFrame.setLayout(new BorderLayout());
+
             this.guiPanel = new JPanel();
             this.guiFrame.setContentPane(this.guiPanel);
-            this.guiPanel.setBackground(this.unknownColour);
-            this.guiFrame.setSize(this.guiSize);
 
             loadWindowDetails();
 
@@ -139,29 +135,11 @@ public class MicrophoneStatus {
             });
         }
 
-        sysTray = SystemTray.getSystemTray();
         unknownIcon = Utils.getImage("/sound_unknown.png");
         normalIcon = Utils.getImage("/sound_on.png");
         mutedIcon = Utils.getImage("/sound_mute.png");
-        menu = new PopupMenu("Menu");
-        item1 = new MenuItem("Exit");
-        menu.add(item1);
 
-        item1.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveWindowDetails();
-                System.exit(0);
-            }
-        });
-
-        trayIcon = new TrayIcon(unknownIcon, "Microphone Status", menu);
-
-        try {
-            sysTray.add(trayIcon);
-        } catch (AWTException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
+        setupSystemTray();
 
         switch (isMuted()) {
             case 1:
@@ -189,37 +167,65 @@ public class MicrophoneStatus {
 
         new Timer(delay, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                switch (isMuted()) {
-                    case 1:
-                        if (status != MicStatus.MUTED) {
-                            status = MicStatus.MUTED;
-                            trayIcon.setImage(mutedIcon);
-                            if (guiDisplay) {
-                                guiPanel.setBackground(mutedColour);
-                            }
-                        }
-                        break;
-                    case 0:
-                        if (status != MicStatus.UNMUTED) {
-                            status = MicStatus.UNMUTED;
-                            trayIcon.setImage(normalIcon);
-                            if (guiDisplay) {
-                                guiPanel.setBackground(normalColour);
-                            }
-                        }
-                        break;
-                    default:
-                        if (status != MicStatus.UNKNOWN) {
-                            status = MicStatus.UNKNOWN;
-                            trayIcon.setImage(unknownIcon);
-                            if (guiDisplay) {
-                                guiPanel.setBackground(unknownColour);
-                            }
-                        }
-                        break;
-                }
+                checkStatus();
             }
         }).start();
+    }
+
+    private void checkStatus() {
+        switch (isMuted()) {
+            case 1:
+                if (status != MicStatus.MUTED) {
+                    status = MicStatus.MUTED;
+                    trayIcon.setImage(mutedIcon);
+                    if (guiDisplay) {
+                        guiPanel.setBackground(mutedColour);
+                    }
+                }
+                break;
+            case 0:
+                if (status != MicStatus.UNMUTED) {
+                    status = MicStatus.UNMUTED;
+                    trayIcon.setImage(normalIcon);
+                    if (guiDisplay) {
+                        guiPanel.setBackground(normalColour);
+                    }
+                }
+                break;
+            default:
+                if (status != MicStatus.UNKNOWN) {
+                    status = MicStatus.UNKNOWN;
+                    trayIcon.setImage(unknownIcon);
+                    if (guiDisplay) {
+                        guiPanel.setBackground(unknownColour);
+                    }
+                }
+                break;
+        }
+    }
+
+    private void setupSystemTray() {
+        this.sysTray = SystemTray.getSystemTray();
+        this.systemTrayMenu = new PopupMenu("Menu");
+
+        this.exitMenuItem = new MenuItem("Exit");
+        this.systemTrayMenu.add(this.exitMenuItem);
+
+        this.exitMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveWindowDetails();
+                System.exit(0);
+            }
+        });
+
+        this.trayIcon = new TrayIcon(this.unknownIcon, "Microphone Status", this.systemTrayMenu);
+
+        try {
+            this.sysTray.add(this.trayIcon);
+        } catch (AWTException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public int isMuted() {
@@ -279,21 +285,26 @@ public class MicrophoneStatus {
 
     private void loadWindowDetails() {
         if (!Utils.getSettingsFile().exists()) {
-            this.windowDetails = new WindowDetails(new Dimension(200, 200), new Point(100, 100));
-            saveWindowDetails();
-            this.windowDetails = null;
+            createDefaultSettingsFile();
         }
 
-        try {
-            FileReader reader = new FileReader(Utils.getSettingsFile());
-            this.windowDetails = this.gson.fromJson(reader, WindowDetails.class);
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        int tries = 1;
+
+        while (this.windowDetails == null && tries <= 10) {
+            try {
+                FileReader reader = new FileReader(Utils.getSettingsFile());
+                this.windowDetails = this.gson.fromJson(reader, WindowDetails.class);
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                createDefaultSettingsFile();
+            }
+
+            tries++;
         }
 
         if (this.windowDetails == null) {
-            System.err.println("Error loading settings!");
+            System.err.println("Error loading settings from " + Utils.getSettingsFile().getAbsolutePath());
             System.exit(1);
         }
 
@@ -301,9 +312,17 @@ public class MicrophoneStatus {
         this.guiFrame.setLocation(this.windowDetails.getPosition());
     }
 
+    private void createDefaultSettingsFile() {
+        this.windowDetails = new WindowDetails(new Dimension(200, 200), new Point(100, 100));
+        saveWindowDetails();
+        this.windowDetails = null;
+    }
+
     private void updateWindowDetails() {
         this.windowDetails.setSize(this.guiFrame.getSize());
         this.windowDetails.setPosition(this.guiFrame.getLocation());
+
+        checkStatus();
     }
 
     private void saveWindowDetails() {
