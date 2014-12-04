@@ -46,7 +46,7 @@ public class TwitchTools {
             if (args[0].equalsIgnoreCase("Followers") || args[0].equalsIgnoreCase("MicrophoneStatus")) {
                 if (args[0].equalsIgnoreCase("Followers")) {
                     if (args.length == 3) {
-                        Followers.run(args[1], Integer.parseInt(args[2]));
+                        new Followers(args[1], Integer.parseInt(args[2])).run();
                     } else {
                         System.err.println("Invalid number of arguments specified!");
                         System.exit(0);

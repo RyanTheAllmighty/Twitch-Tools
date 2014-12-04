@@ -30,66 +30,109 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class Followers {
-    public static void run(String username, int secondsToWait) {
-        File numberOfFollowersFile = new File("followers.txt");
-        File latestFollowerFile = new File("latestfollower.txt");
-        String followerInformation = null;
-        String latestFollower = username;
-        long numberOfFollowers = 0;
+    private String username;
+    private int secondsToWait;
+    private File numberOfFollowersFile = new File("followers.txt");
+    private File latestFollowerFile = new File("latestfollower.txt");
+    private String followerInformation = null;
+
+    private String latestFollower;
+    private long numberOfFollowers;
+
+    private String tempLatestFollower;
+    private long tempNumberOfFollowers;
+
+    public Followers(String username, int secondsToWait) {
+        this.username = username;
+        this.secondsToWait = secondsToWait;
+    }
+
+    public void run() {
+        this.latestFollower = this.username;
+        this.numberOfFollowers = 0;
+        this.tempLatestFollower = this.username;
+        this.tempNumberOfFollowers = 0;
 
         while (true) {
             System.err.println("Getting Information From Twitch API");
             try {
-                followerInformation = Utils.urlToString("https://api.twitch.tv/kraken/channels/"
-                        + username + "/follows?direction=DESC&limit=1&offset=0");
+                followerInformation = Utils.urlToString("https://api.twitch.tv/kraken/channels/" + username +
+                        "/follows?direction=DESC&limit=1&offset=0");
             } catch (ConnectException e) {
                 System.err.println("Couldn't Connect To Twitch API!");
-                System.exit(0);
+                sleep();
+                continue;
             } catch (IOException e) {
                 e.printStackTrace();
-                System.exit(0);
+                sleep();
+                continue;
             }
+
             JSONParser parser = new JSONParser();
+
+            this.tempLatestFollower = this.latestFollower;
+            this.tempNumberOfFollowers = this.numberOfFollowers;
+
             try {
                 Object obj = parser.parse(followerInformation);
                 JSONObject jsonObject = (JSONObject) obj;
                 JSONArray msg = (JSONArray) jsonObject.get("follows");
-                latestFollower = (String) ((JSONObject) ((JSONObject) msg.get(0)).get("user"))
-                        .get("display_name");
-                System.out.println("Latest follower is " + latestFollower);
-                numberOfFollowers = (Long) jsonObject.get("_total");
-                System.out.println("There are " + numberOfFollowers + " followers");
-            } catch (ParseException e) {
+                this.latestFollower = (String) ((JSONObject) ((JSONObject) msg.get(0)).get("user")).get("display_name");
+                System.out.println("Latest follower is " + this.latestFollower);
+                this.numberOfFollowers = (Long) jsonObject.get("_total");
+                System.out.println("There are " + this.numberOfFollowers + " followers");
+            } catch (Exception e) {
                 e.printStackTrace();
+                sleep();
+                continue;
             }
 
-            PrintWriter writer1 = null;
-            PrintWriter writer2 = null;
-            try {
-                writer1 = new PrintWriter(numberOfFollowersFile, "UTF-8");
-                writer1.println(numberOfFollowers);
-                writer2 = new PrintWriter(latestFollowerFile, "UTF-8");
-                writer2.println(latestFollower);
-            } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                e.printStackTrace();
-                System.exit(0);
-            } finally {
-                if (writer1 != null) {
-                    writer1.close();
-                }
-                if (writer2 != null) {
-                    writer2.close();
+            if (!this.tempLatestFollower.equalsIgnoreCase(this.latestFollower)) {
+                PrintWriter writer = null;
+                try {
+                    writer = new PrintWriter(this.latestFollowerFile, "UTF-8");
+                    writer.println(this.latestFollower);
+                } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    sleep();
+                    continue;
+                } finally {
+                    if (writer != null) {
+                        writer.close();
+                    }
                 }
             }
 
-            try {
-                System.out.println("Sleeping For " + secondsToWait + " seconds");
-                Thread.sleep(secondsToWait * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (this.tempNumberOfFollowers != this.numberOfFollowers) {
+                PrintWriter writer = null;
+                try {
+                    writer = new PrintWriter(this.numberOfFollowersFile, "UTF-8");
+                    writer.println(this.numberOfFollowers);
+                } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                    System.exit(0);
+                    sleep();
+                    continue;
+                } finally {
+                    if (writer != null) {
+                        writer.close();
+                    }
+                }
             }
 
-            System.out.println("--------------------------------------");
+            sleep();
         }
+    }
+
+    public void sleep() {
+        try {
+            System.out.println("Sleeping For " + secondsToWait + " seconds");
+            Thread.sleep(secondsToWait * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        System.out.println("--------------------------------------");
     }
 }
