@@ -54,6 +54,8 @@ public class MicrophoneStatus implements HotKeyListener {
     private boolean guiDisplay;
     private Provider provider;
 
+    private MicStatus status;
+
     private JFrame guiFrame;
     private JPanel guiPanel;
     private Color unknownColour = Color.YELLOW;
@@ -106,23 +108,61 @@ public class MicrophoneStatus implements HotKeyListener {
                 e.printStackTrace();
                 System.exit(0);
             }
+
+            switch (isMuted()) {
+                case 1:
+                    this.status = MicStatus.MUTED;
+                    trayIcon.setImage(mutedIcon);
+                    if (guiDisplay) {
+                        guiPanel.setBackground(mutedColour);
+                    }
+                    break;
+                case 0:
+                    this.status = MicStatus.UNMUTED;
+                    trayIcon.setImage(normalIcon);
+                    if (guiDisplay) {
+                        guiPanel.setBackground(normalColour);
+                    }
+                    break;
+                default:
+                    this.status = MicStatus.UNKNOWN;
+                    trayIcon.setImage(unknownIcon);
+                    if (guiDisplay) {
+                        guiPanel.setBackground(unknownColour);
+                    }
+                    break;
+            }
+
             new Timer(delay, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    if (isMuted() == 1) {
-                        trayIcon.setImage(mutedIcon);
-                        if (guiDisplay) {
-                            guiPanel.setBackground(mutedColour);
-                        }
-                    } else if (isMuted() == 0) {
-                        trayIcon.setImage(normalIcon);
-                        if (guiDisplay) {
-                            guiPanel.setBackground(normalColour);
-                        }
-                    } else {
-                        trayIcon.setImage(unknownIcon);
-                        if (guiDisplay) {
-                            guiPanel.setBackground(unknownColour);
-                        }
+                    switch (isMuted()) {
+                        case 1:
+                            if (status != MicStatus.MUTED) {
+                                status = MicStatus.MUTED;
+                                trayIcon.setImage(mutedIcon);
+                                if (guiDisplay) {
+                                    guiPanel.setBackground(mutedColour);
+                                }
+                            }
+                            break;
+                        case 0:
+                            if (status != MicStatus.UNMUTED) {
+                                status = MicStatus.UNMUTED;
+                                trayIcon.setImage(normalIcon);
+                                if (guiDisplay) {
+                                    guiPanel.setBackground(normalColour);
+                                }
+                            }
+                            break;
+                        default:
+                            if (status != MicStatus.UNKNOWN) {
+                                status = MicStatus.UNKNOWN;
+                                trayIcon.setImage(unknownIcon);
+                                if (guiDisplay) {
+                                    guiPanel.setBackground(unknownColour);
+                                }
+                            }
+                            break;
                     }
                 }
             }).start();
@@ -136,8 +176,7 @@ public class MicrophoneStatus implements HotKeyListener {
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err
-                    .println("2 Arguments Are Expected. Time Delay and if the gui should be displayed.");
+            System.err.println("2 Arguments Are Expected. Time Delay and if the gui should be displayed.");
             System.exit(0);
         }
         final int delay = Integer.parseInt(args[0]);
