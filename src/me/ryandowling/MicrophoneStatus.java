@@ -36,6 +36,8 @@ import java.awt.event.WindowEvent;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.BooleanControl;
@@ -43,10 +45,15 @@ import javax.sound.sampled.CompoundControl;
 import javax.sound.sampled.Control;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.Port;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -58,6 +65,8 @@ public class MicrophoneStatus {
 
     private WindowDetails windowDetails;
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private BooleanControl muteControl;
 
     private Image unknownIcon;
     private Image normalIcon;
@@ -71,6 +80,8 @@ public class MicrophoneStatus {
     private Provider provider;
 
     private MicStatus status;
+    private String[] microphones = getMicrophones();
+    private String microphoneToUse = null;
 
     private JFrame guiFrame;
     private JPanel guiPanel;
@@ -92,9 +103,23 @@ public class MicrophoneStatus {
         this.provider.register(KeyStroke.getKeyStroke("ctrl alt B"), new HotKeyListener() {
             @Override
             public void onHotKey(HotKey hotKey) {
-                muteMicrophone();
+                toggleMuteStatus();
             }
         });
+
+        if (microphones.length == 1) {
+            microphoneToUse = microphones[0];
+        } else {
+            microphoneToUse = (String) JOptionPane.showInputDialog(new JFrame(), "Select a microphone to use",
+                    "Select a microphone to use", JOptionPane.QUESTION_MESSAGE, null, microphones, microphones[0]);
+        }
+
+        if (microphoneToUse == null) {
+            System.err.println("Couldn't find a microphone to use!");
+            System.exit(1);
+        }
+
+        setupMicrophone(microphoneToUse);
 
         initComponents();
     }
@@ -141,66 +166,44 @@ public class MicrophoneStatus {
 
         setupSystemTray();
 
-        switch (isMuted()) {
-            case 1:
-                this.status = MicStatus.MUTED;
-                trayIcon.setImage(mutedIcon);
-                if (guiDisplay) {
-                    guiPanel.setBackground(mutedColour);
-                }
-                break;
-            case 0:
-                this.status = MicStatus.UNMUTED;
-                trayIcon.setImage(normalIcon);
-                if (guiDisplay) {
-                    guiPanel.setBackground(normalColour);
-                }
-                break;
-            default:
-                this.status = MicStatus.UNKNOWN;
-                trayIcon.setImage(unknownIcon);
-                if (guiDisplay) {
-                    guiPanel.setBackground(unknownColour);
-                }
-                break;
+        if (isMuted()) {
+            this.status = MicStatus.MUTED;
+            trayIcon.setImage(mutedIcon);
+            if (guiDisplay) {
+                guiPanel.setBackground(mutedColour);
+            }
+        } else {
+            this.status = MicStatus.UNMUTED;
+            trayIcon.setImage(normalIcon);
+            if (guiDisplay) {
+                guiPanel.setBackground(normalColour);
+            }
         }
 
         new Timer(delay, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                checkStatus();
+                checkStatus(false);
             }
         }).start();
     }
 
-    private void checkStatus() {
-        switch (isMuted()) {
-            case 1:
-                if (status != MicStatus.MUTED) {
-                    status = MicStatus.MUTED;
-                    trayIcon.setImage(mutedIcon);
-                    if (guiDisplay) {
-                        guiPanel.setBackground(mutedColour);
-                    }
+    private void checkStatus(boolean force) {
+        if (isMuted()) {
+            if (status != MicStatus.MUTED || force) {
+                status = MicStatus.MUTED;
+                trayIcon.setImage(mutedIcon);
+                if (guiDisplay) {
+                    guiPanel.setBackground(mutedColour);
                 }
-                break;
-            case 0:
-                if (status != MicStatus.UNMUTED) {
-                    status = MicStatus.UNMUTED;
-                    trayIcon.setImage(normalIcon);
-                    if (guiDisplay) {
-                        guiPanel.setBackground(normalColour);
-                    }
+            }
+        } else {
+            if (status != MicStatus.UNMUTED || force) {
+                status = MicStatus.UNMUTED;
+                trayIcon.setImage(normalIcon);
+                if (guiDisplay) {
+                    guiPanel.setBackground(normalColour);
                 }
-                break;
-            default:
-                if (status != MicStatus.UNKNOWN) {
-                    status = MicStatus.UNKNOWN;
-                    trayIcon.setImage(unknownIcon);
-                    if (guiDisplay) {
-                        guiPanel.setBackground(unknownColour);
-                    }
-                }
-                break;
+            }
         }
     }
 
@@ -228,35 +231,34 @@ public class MicrophoneStatus {
         }
     }
 
-    public int isMuted() {
-        Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
-        for (Mixer.Info info : mixerInfos) {
-            Mixer mixer = AudioSystem.getMixer(info);
-            int maxLines = mixer.getMaxLines(Port.Info.MICROPHONE);
-            Port lineIn = null;
-            if (maxLines > 0) {
-                try {
-                    lineIn = (Port) mixer.getLine(Port.Info.MICROPHONE);
-                    lineIn.open();
-                    CompoundControl cc = (CompoundControl) lineIn.getControls()[0];
-                    Control[] controls = cc.getMemberControls();
-                    for (Control c : controls) {
-                        if (c.getType() == BooleanControl.Type.MUTE) {
-                            return (((BooleanControl) c).getValue()) ? 1 : 0;
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return -1;
-
+    public boolean isMuted() {
+        return this.muteControl.getValue();
     }
 
-    public void muteMicrophone() {
+    public String[] getMicrophones() {
+        List<String> microphones = new ArrayList<String>();
+
         Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
         for (Mixer.Info info : mixerInfos) {
+            Mixer mixer = AudioSystem.getMixer(info);
+            int maxLines = mixer.getMaxLines(Port.Info.MICROPHONE);
+            Port lineIn = null;
+            if (maxLines > 0) {
+                microphones.add(info.getName());
+            }
+        }
+
+        return microphones.toArray(new String[microphones.size()]);
+    }
+
+    private void setupMicrophone(String name) {
+        Mixer.Info[] mixerInfos = AudioSystem.getMixerInfo();
+
+        for (Mixer.Info info : mixerInfos) {
+            if (!info.getName().equals(name)) {
+                continue;
+            }
+
             Mixer mixer = AudioSystem.getMixer(info);
             int maxLines = mixer.getMaxLines(Port.Info.MICROPHONE);
             Port lineIn = null;
@@ -268,12 +270,7 @@ public class MicrophoneStatus {
                     Control[] controls = cc.getMemberControls();
                     for (Control c : controls) {
                         if (c.getType() == BooleanControl.Type.MUTE) {
-                            if (((BooleanControl) c).getValue()) {
-                                ((BooleanControl) c).setValue(false); // Mute it
-                            } else {
-                                ((BooleanControl) c).setValue(true); // Mute it
-                            }
-                            return;
+                            this.muteControl = (BooleanControl) c;
                         }
                     }
                 } catch (Exception e) {
@@ -281,6 +278,15 @@ public class MicrophoneStatus {
                 }
             }
         }
+
+        if (this.muteControl == null) {
+            System.err.println("Couldn't setup microphone!");
+            System.exit(1);
+        }
+    }
+
+    public void toggleMuteStatus() {
+        this.muteControl.setValue(!isMuted());
     }
 
     private void loadWindowDetails() {
@@ -322,7 +328,7 @@ public class MicrophoneStatus {
         this.windowDetails.setSize(this.guiFrame.getSize());
         this.windowDetails.setPosition(this.guiFrame.getLocation());
 
-        checkStatus();
+        checkStatus(true);
     }
 
     private void saveWindowDetails() {
