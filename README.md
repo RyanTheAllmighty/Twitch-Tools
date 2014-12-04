@@ -5,17 +5,18 @@ Twitch Tools
 
 Twitch Tools is a set of Java applicaions which I use personally when streaming on Twitch. The include the following programs:
 
-- Followers.java writes the username of your latest follower and the total number of followers to seperate .txt files for reading in with OBS (Pass in 2 arguments, Username and the wait time in between checks in seconds)
-- VLCNowPlaying.java writes the details of the currently playing song in VLC to a .txt file for reading in with OBS (Pass in 1 argument, the wait time in between checks in seconds)
+- Followers.java writes the username of your latest follower and the total number of followers to separate .txt files for reading in with OBS (Pass in 2 arguments, Username and the wait time in between checks in seconds)
 - MicrophoneStatus.java gets the status of your Microphone and shows a icon in your taskbar depending on if your microphone is muted or not (Pass in 2 arguments, the wait time in between checks in milliseconds and if the gui should be displayed showing colours depending on the status of the microphone with 1 being to show it and 0 being to not show it). You can mute the Microphone on Windows only using the Ctrl+Alt+B Global HotKey that's created
 
 ### Coding Standards
 
-Please keep all line lengths to 100 characters and use 4 spaces rather than tab characters
-
-### Downloads
-
-TwitchTools.jar: https://dl.dropboxusercontent.com/u/32912245/TwitchTools.jar
++ Please keep all line lengths to 120 characters and use 4 spaces rather than tab characters
++ Please keep all variables at the top of the class
++ Please keep all inner classes at the bottom
++ Please don't use star imports
++ Please use the IntelliJ-Coding-Style.xml for the project (if using IntelliJ) in order to keep all formatting consistent
++ Please update the CHANGELOG.md file when fixing/adding something so it's easier to keep track of than git commits. Feel free to add in a 'by MyUsername' to the end of the changes you've made.
++ Please don't do large commits. My preference is a single commit for a single fix/addition rather than bundled up commits.
 
 ### Usage
 
@@ -23,8 +24,4 @@ To use these tools simply create a runnable JAR and point it to the TwitchTools.
 
 ### License
 
-Your free to use this however you please as long as you follow the license
-
-This work is licensed under the GPLv2 License. To view a copy of this license, visit http://www.gnu.org/licenses/gpl-2.0.html.
-
-Global Hot Keys included using the JIntelliType library (https://code.google.com/p/jintellitype/) for Windows Only
+This work is licensed under the GNU General Public License v3.0. To view a copy of this license, visit http://www.gnu.org/licenses/gpl-3.0.txt.

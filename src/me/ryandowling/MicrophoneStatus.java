@@ -32,13 +32,15 @@ import javax.sound.sampled.Port;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
-import com.melloware.jintellitype.HotkeyListener;
-import com.melloware.jintellitype.JIntellitype;
+import com.tulskiy.keymaster.common.HotKey;
+import com.tulskiy.keymaster.common.HotKeyListener;
+import com.tulskiy.keymaster.common.Provider;
 
-public class MicrophoneStatus implements HotkeyListener {
+public class MicrophoneStatus implements HotKeyListener {
 
     private JFrame frame;
     private Image unknownIcon;
@@ -50,7 +52,7 @@ public class MicrophoneStatus implements HotkeyListener {
     private TrayIcon trayIcon;
     private int delay;
     private boolean guiDisplay;
-    private JIntellitype intelliType;
+    private Provider provider;
 
     private JFrame guiFrame;
     private JPanel guiPanel;
@@ -60,10 +62,8 @@ public class MicrophoneStatus implements HotkeyListener {
     private Dimension guiSize = new Dimension(300, 300);
 
     public MicrophoneStatus(int delay, boolean guiDisplay) {
-        this.intelliType = JIntellitype.getInstance();
-        this.intelliType.registerHotKey(1, JIntellitype.MOD_CONTROL + JIntellitype.MOD_ALT,
-                (int) 'B');
-        this.intelliType.addHotKeyListener(this);
+        this.provider = Provider.getCurrentProvider(true);
+        this.provider.register(KeyStroke.getKeyStroke("ctrl alt B"), this);
         this.delay = delay;
         this.guiDisplay = guiDisplay;
         initComponents();
@@ -126,7 +126,6 @@ public class MicrophoneStatus implements HotkeyListener {
                     }
                 }
             }).start();
-            ;
         } else {
             System.err.println("System Tray is not supported! Not showing the icon.");
             if (!this.guiDisplay) {
@@ -157,9 +156,7 @@ public class MicrophoneStatus implements HotkeyListener {
             System.err.println("Unable to load image: " + path);
         }
 
-        ImageIcon icon = new ImageIcon(url);
-
-        return icon.getImage();
+        return new ImageIcon(url).getImage();
     }
 
     public int isMuted() {
@@ -218,10 +215,9 @@ public class MicrophoneStatus implements HotkeyListener {
         return;
     }
 
+
     @Override
-    public void onHotKey(int identifier) {
-        if (identifier == 1) {
-            muteMicrophone();
-        }
+    public void onHotKey(HotKey hotKey) {
+        muteMicrophone();
     }
 }

@@ -19,16 +19,8 @@ public class TwitchTools {
             System.out.println("Invalid number of arguments specified!");
             System.exit(0);
         } else if (args.length >= 1 && args.length <= 3) {
-            if (args[0].equalsIgnoreCase("VLCNowPlaying") || args[0].equalsIgnoreCase("Followers")
-                    || args[0].equalsIgnoreCase("MicrophoneStatus")) {
-                if (args[0].equalsIgnoreCase("VLCNowPlaying")) {
-                    if (args.length == 2 || args.length == 3) {
-                        VLCNowPlaying.main(Arrays.copyOfRange(args, 1, args.length));
-                    } else {
-                        System.out.println("Invalid number of arguments specified!");
-                        System.exit(0);
-                    }
-                } else if (args[0].equalsIgnoreCase("Followers")) {
+            if (args[0].equalsIgnoreCase("Followers") || args[0].equalsIgnoreCase("MicrophoneStatus")) {
+                if (args[0].equalsIgnoreCase("Followers")) {
                     if (args.length == 3) {
                         Followers.main(Arrays.copyOfRange(args, 1, args.length));
                     } else {
