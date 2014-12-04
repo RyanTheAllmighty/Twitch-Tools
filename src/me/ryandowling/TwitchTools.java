@@ -17,12 +17,28 @@
  */
 package me.ryandowling;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import javax.swing.SwingUtilities;
-import java.util.Arrays;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class TwitchTools {
+    public static Settings settings;
+    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) {
+        loadSettings();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                saveSettings();
+            }
+        });
         if (args.length == 0) {
             System.err.println("Invalid number of arguments specified!");
             System.exit(0);
@@ -57,6 +73,48 @@ public class TwitchTools {
                 System.err.println("Options are: Followers or MicrophoneStatus!");
                 System.exit(0);
             }
+        }
+    }
+
+    private static void loadSettings() {
+        if (!Utils.getSettingsFile().exists()) {
+            createDefaultSettingsFile();
+        }
+
+        int tries = 1;
+
+        while (settings == null && tries <= 10) {
+            try {
+                FileReader reader = new FileReader(Utils.getSettingsFile());
+                settings = gson.fromJson(reader, Settings.class);
+                reader.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                createDefaultSettingsFile();
+            }
+
+            tries++;
+        }
+
+        if (settings == null) {
+            System.err.println("Error loading settings from " + Utils.getSettingsFile().getAbsolutePath());
+            System.exit(1);
+        }
+    }
+
+    private static void createDefaultSettingsFile() {
+        settings = new Settings();
+        settings.setMicrophoneStatus(new WindowDetails(new Dimension(200, 200), new Point(100, 100)));
+        saveSettings();
+    }
+
+    private static void saveSettings() {
+        try {
+            FileWriter writer = new FileWriter(Utils.getSettingsFile());
+            writer.write(gson.toJson(settings));
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

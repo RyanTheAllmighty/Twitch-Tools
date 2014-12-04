@@ -64,8 +64,6 @@ import com.tulskiy.keymaster.common.Provider;
 public class MicrophoneStatus {
 
     private WindowDetails windowDetails;
-    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
     private BooleanControl muteControl;
 
     private Image unknownIcon;
@@ -135,13 +133,11 @@ public class MicrophoneStatus {
             loadWindowDetails();
 
             this.guiFrame.setVisible(true);
-
             this.guiFrame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
                     super.windowClosing(e);
-                    saveWindowDetails();
-                    System.exit(0);
+                    System.exit(1);
                 }
             });
 
@@ -216,7 +212,6 @@ public class MicrophoneStatus {
 
         this.exitMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                saveWindowDetails();
                 System.exit(0);
             }
         });
@@ -290,54 +285,16 @@ public class MicrophoneStatus {
     }
 
     private void loadWindowDetails() {
-        if (!Utils.getSettingsFile().exists()) {
-            createDefaultSettingsFile();
-        }
-
-        int tries = 1;
-
-        while (this.windowDetails == null && tries <= 10) {
-            try {
-                FileReader reader = new FileReader(Utils.getSettingsFile());
-                this.windowDetails = this.gson.fromJson(reader, WindowDetails.class);
-                reader.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-                createDefaultSettingsFile();
-            }
-
-            tries++;
-        }
-
-        if (this.windowDetails == null) {
-            System.err.println("Error loading settings from " + Utils.getSettingsFile().getAbsolutePath());
-            System.exit(1);
-        }
-
+        this.windowDetails = TwitchTools.settings.getMicrophoneStatus();
         this.guiFrame.setSize(this.windowDetails.getSize());
         this.guiFrame.setLocation(this.windowDetails.getPosition());
-    }
-
-    private void createDefaultSettingsFile() {
-        this.windowDetails = new WindowDetails(new Dimension(200, 200), new Point(100, 100));
-        saveWindowDetails();
-        this.windowDetails = null;
     }
 
     private void updateWindowDetails() {
         this.windowDetails.setSize(this.guiFrame.getSize());
         this.windowDetails.setPosition(this.guiFrame.getLocation());
+        TwitchTools.settings.setMicrophoneStatus(this.windowDetails);
 
         checkStatus(true);
-    }
-
-    private void saveWindowDetails() {
-        try {
-            FileWriter writer = new FileWriter(Utils.getSettingsFile());
-            writer.write(gson.toJson(this.windowDetails));
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
