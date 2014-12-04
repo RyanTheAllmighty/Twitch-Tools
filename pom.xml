@@ -15,7 +15,7 @@
 
     <properties>
         <project.jdk.version>1.7</project.jdk.version>
-        <mainclass>com.atlauncher.App</mainclass>
+        <mainclass>me.ryandowling.TwitchTools</mainclass>
     </properties>
 
     <repositories>

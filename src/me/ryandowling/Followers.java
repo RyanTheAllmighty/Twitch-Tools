@@ -54,7 +54,7 @@ public class Followers {
         this.tempNumberOfFollowers = 0;
 
         while (true) {
-            System.err.println("Getting Information From Twitch API");
+            System.out.println("Getting Information From Twitch API");
             try {
                 followerInformation = Utils.urlToString("https://api.twitch.tv/kraken/channels/" + username +
                         "/follows?direction=DESC&limit=1&offset=0");
