@@ -23,11 +23,19 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.MenuItem;
+import java.awt.Point;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 
 import javax.sound.sampled.AudioSystem;
@@ -40,16 +48,20 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.tulskiy.keymaster.common.HotKey;
 import com.tulskiy.keymaster.common.HotKeyListener;
 import com.tulskiy.keymaster.common.Provider;
 
-public class MicrophoneStatus implements HotKeyListener {
+public class MicrophoneStatus {
 
-    private JFrame frame;
+    private WindowDetails windowDetails;
+    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
     private Image unknownIcon;
     private Image normalIcon;
     private Image mutedIcon;
@@ -71,17 +83,26 @@ public class MicrophoneStatus implements HotKeyListener {
     private Dimension guiSize = new Dimension(300, 300);
 
     public MicrophoneStatus(int delay, boolean guiDisplay) {
-        this.provider = Provider.getCurrentProvider(true);
-        this.provider.register(KeyStroke.getKeyStroke("ctrl alt B"), this);
+        if (!SystemTray.isSupported()) {
+            System.err.println("System Tray is not supported!");
+            System.exit(1);
+        }
+
         this.delay = delay;
         this.guiDisplay = guiDisplay;
+
+        this.provider = Provider.getCurrentProvider(true);
+        this.provider.register(KeyStroke.getKeyStroke("ctrl alt B"), new HotKeyListener() {
+            @Override
+            public void onHotKey(HotKey hotKey) {
+                muteMicrophone();
+            }
+        });
+
         initComponents();
-        frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
     private void initComponents() {
-        frame = new JFrame("Microphone Status");
-
         if (this.guiDisplay) {
             this.guiFrame = new JFrame();
             this.guiFrame.setLayout(new BorderLayout());
@@ -89,106 +110,116 @@ public class MicrophoneStatus implements HotKeyListener {
             this.guiFrame.setContentPane(this.guiPanel);
             this.guiPanel.setBackground(this.unknownColour);
             this.guiFrame.setSize(this.guiSize);
+
+            loadWindowDetails();
+
             this.guiFrame.setVisible(true);
-        }
 
-        if (SystemTray.isSupported()) {
-            sysTray = SystemTray.getSystemTray();
-            unknownIcon = getImage("/sound_unknown.png");
-            normalIcon = getImage("/sound_on.png");
-            mutedIcon = getImage("/sound_mute.png");
-            menu = new PopupMenu("Menu");
-            item1 = new MenuItem("Exit");
-            menu.add(item1);
-
-            item1.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
+            this.guiFrame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    super.windowClosing(e);
+                    saveWindowDetails();
                     System.exit(0);
                 }
             });
 
-            trayIcon = new TrayIcon(unknownIcon, "Microphone Status", menu);
+            this.guiFrame.addComponentListener(new ComponentAdapter() {
+                @Override
+                public void componentResized(ComponentEvent e) {
+                    super.componentResized(e);
+                    updateWindowDetails();
+                }
 
-            try {
-                sysTray.add(trayIcon);
-            } catch (AWTException e) {
-                e.printStackTrace();
+                @Override
+                public void componentMoved(ComponentEvent e) {
+                    super.componentMoved(e);
+                    updateWindowDetails();
+                }
+            });
+        }
+
+        sysTray = SystemTray.getSystemTray();
+        unknownIcon = Utils.getImage("/sound_unknown.png");
+        normalIcon = Utils.getImage("/sound_on.png");
+        mutedIcon = Utils.getImage("/sound_mute.png");
+        menu = new PopupMenu("Menu");
+        item1 = new MenuItem("Exit");
+        menu.add(item1);
+
+        item1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                saveWindowDetails();
                 System.exit(0);
             }
+        });
 
-            switch (isMuted()) {
-                case 1:
-                    this.status = MicStatus.MUTED;
-                    trayIcon.setImage(mutedIcon);
-                    if (guiDisplay) {
-                        guiPanel.setBackground(mutedColour);
-                    }
-                    break;
-                case 0:
-                    this.status = MicStatus.UNMUTED;
-                    trayIcon.setImage(normalIcon);
-                    if (guiDisplay) {
-                        guiPanel.setBackground(normalColour);
-                    }
-                    break;
-                default:
-                    this.status = MicStatus.UNKNOWN;
-                    trayIcon.setImage(unknownIcon);
-                    if (guiDisplay) {
-                        guiPanel.setBackground(unknownColour);
-                    }
-                    break;
-            }
+        trayIcon = new TrayIcon(unknownIcon, "Microphone Status", menu);
 
-            new Timer(delay, new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    switch (isMuted()) {
-                        case 1:
-                            if (status != MicStatus.MUTED) {
-                                status = MicStatus.MUTED;
-                                trayIcon.setImage(mutedIcon);
-                                if (guiDisplay) {
-                                    guiPanel.setBackground(mutedColour);
-                                }
-                            }
-                            break;
-                        case 0:
-                            if (status != MicStatus.UNMUTED) {
-                                status = MicStatus.UNMUTED;
-                                trayIcon.setImage(normalIcon);
-                                if (guiDisplay) {
-                                    guiPanel.setBackground(normalColour);
-                                }
-                            }
-                            break;
-                        default:
-                            if (status != MicStatus.UNKNOWN) {
-                                status = MicStatus.UNKNOWN;
-                                trayIcon.setImage(unknownIcon);
-                                if (guiDisplay) {
-                                    guiPanel.setBackground(unknownColour);
-                                }
-                            }
-                            break;
-                    }
+        try {
+            sysTray.add(trayIcon);
+        } catch (AWTException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        switch (isMuted()) {
+            case 1:
+                this.status = MicStatus.MUTED;
+                trayIcon.setImage(mutedIcon);
+                if (guiDisplay) {
+                    guiPanel.setBackground(mutedColour);
                 }
-            }).start();
-        } else {
-            System.err.println("System Tray is not supported! Not showing the icon.");
-            if (!this.guiDisplay) {
-                System.exit(1);
+                break;
+            case 0:
+                this.status = MicStatus.UNMUTED;
+                trayIcon.setImage(normalIcon);
+                if (guiDisplay) {
+                    guiPanel.setBackground(normalColour);
+                }
+                break;
+            default:
+                this.status = MicStatus.UNKNOWN;
+                trayIcon.setImage(unknownIcon);
+                if (guiDisplay) {
+                    guiPanel.setBackground(unknownColour);
+                }
+                break;
+        }
+
+        new Timer(delay, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                switch (isMuted()) {
+                    case 1:
+                        if (status != MicStatus.MUTED) {
+                            status = MicStatus.MUTED;
+                            trayIcon.setImage(mutedIcon);
+                            if (guiDisplay) {
+                                guiPanel.setBackground(mutedColour);
+                            }
+                        }
+                        break;
+                    case 0:
+                        if (status != MicStatus.UNMUTED) {
+                            status = MicStatus.UNMUTED;
+                            trayIcon.setImage(normalIcon);
+                            if (guiDisplay) {
+                                guiPanel.setBackground(normalColour);
+                            }
+                        }
+                        break;
+                    default:
+                        if (status != MicStatus.UNKNOWN) {
+                            status = MicStatus.UNKNOWN;
+                            trayIcon.setImage(unknownIcon);
+                            if (guiDisplay) {
+                                guiPanel.setBackground(unknownColour);
+                            }
+                        }
+                        break;
+                }
             }
-        }
-    }
-
-    public Image getImage(String path) {
-        URL url = System.class.getResource(path);
-
-        if (url == null) {
-            System.err.println("Unable to load image: " + path);
-        }
-
-        return new ImageIcon(url).getImage();
+        }).start();
     }
 
     public int isMuted() {
@@ -208,8 +239,8 @@ public class MicrophoneStatus implements HotKeyListener {
                             return (((BooleanControl) c).getValue()) ? 1 : 0;
                         }
                     }
-                } catch (Exception ex) {
-                    continue;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -239,17 +270,49 @@ public class MicrophoneStatus implements HotKeyListener {
                             return;
                         }
                     }
-                } catch (Exception ex) {
-                    continue;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }
-        return;
     }
 
+    private void loadWindowDetails() {
+        if (!Utils.getSettingsFile().exists()) {
+            this.windowDetails = new WindowDetails(new Dimension(200, 200), new Point(100, 100));
+            saveWindowDetails();
+            this.windowDetails = null;
+        }
 
-    @Override
-    public void onHotKey(HotKey hotKey) {
-        muteMicrophone();
+        try {
+            FileReader reader = new FileReader(Utils.getSettingsFile());
+            this.windowDetails = this.gson.fromJson(reader, WindowDetails.class);
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (this.windowDetails == null) {
+            System.err.println("Error loading settings!");
+            System.exit(1);
+        }
+
+        this.guiFrame.setSize(this.windowDetails.getSize());
+        this.guiFrame.setLocation(this.windowDetails.getPosition());
+    }
+
+    private void updateWindowDetails() {
+        this.windowDetails.setSize(this.guiFrame.getSize());
+        this.windowDetails.setPosition(this.guiFrame.getLocation());
+    }
+
+    private void saveWindowDetails() {
+        try {
+            FileWriter writer = new FileWriter(Utils.getSettingsFile());
+            writer.write(gson.toJson(this.windowDetails));
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

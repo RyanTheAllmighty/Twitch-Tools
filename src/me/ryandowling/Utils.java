@@ -17,13 +17,18 @@
  */
 package me.ryandowling;
 
+import java.awt.Image;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
 import sun.misc.BASE64Encoder;
+
+import javax.swing.ImageIcon;
 
 public class Utils {
 
@@ -45,6 +50,29 @@ public class Utils {
         in.close();
 
         return response.toString();
+    }
+
+    public static Image getImage(String path) {
+        URL url = System.class.getResource(path);
+
+        if (url == null) {
+            System.err.println("Unable to load image: " + path);
+        }
+
+        return new ImageIcon(url).getImage();
+    }
+
+    public static File getSettingsFile() {
+        if (OperatingSystem.getOS() == OperatingSystem.LINUX) {
+            try {
+                return new File(TwitchTools.class.getProtectionDomain().getCodeSource().getLocation().toURI()
+                        .getSchemeSpecificPart()).getParentFile();
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return new File(System.getProperty("user.dir"), "settings.json");
     }
 
 }
