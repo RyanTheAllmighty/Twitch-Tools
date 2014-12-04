@@ -72,7 +72,9 @@ public class MicrophoneStatus {
     private SystemTray sysTray;
     private PopupMenu systemTrayMenu;
     private MenuItem exitMenuItem;
+    private MenuItem resetMenuItem;
     private TrayIcon trayIcon;
+
     private int delay;
     private boolean guiDisplay;
     private Provider provider;
@@ -207,14 +209,26 @@ public class MicrophoneStatus {
         this.sysTray = SystemTray.getSystemTray();
         this.systemTrayMenu = new PopupMenu("Menu");
 
+        this.resetMenuItem = new MenuItem("Reset Size & Position");
+
+        this.resetMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                guiFrame.setSize(new Dimension(100, 100));
+                guiFrame.setLocation(0, 0);
+            }
+        });
+
+        this.systemTrayMenu.add(this.resetMenuItem);
+
         this.exitMenuItem = new MenuItem("Exit");
-        this.systemTrayMenu.add(this.exitMenuItem);
 
         this.exitMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.exit(0);
             }
         });
+
+        this.systemTrayMenu.add(this.exitMenuItem);
 
         this.trayIcon = new TrayIcon(this.unknownIcon, "Microphone Status", this.systemTrayMenu);
 
