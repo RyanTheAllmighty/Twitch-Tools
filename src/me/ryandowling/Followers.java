@@ -117,9 +117,7 @@ public class Followers {
                 JSONObject jsonObject = (JSONObject) obj;
                 JSONArray msg = (JSONArray) jsonObject.get("follows");
                 this.latestFollower = (String) ((JSONObject) ((JSONObject) msg.get(0)).get("user")).get("display_name");
-                System.out.println("Latest follower is " + this.latestFollower);
                 this.numberOfFollowers = (Long) jsonObject.get("_total");
-                System.out.println("There are " + this.numberOfFollowers + " followers");
             } catch (Exception e) {
                 e.printStackTrace();
                 sleep();
@@ -138,6 +136,10 @@ public class Followers {
             if (this.tempNumberOfFollowers != this.numberOfFollowers) {
                 moreFollowers();
             }
+
+            System.out.println("Latest follower is " + this.latestFollower);
+            System.out.println("There are " + this.numberOfFollowers + " followers");
+            System.out.println("There are " + this.followers.size() + " followers today");
 
             sleep();
         }
