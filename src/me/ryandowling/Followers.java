@@ -23,9 +23,10 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +37,10 @@ public class Followers {
 
     private List<String> followers = new ArrayList<String>();
 
-    private File followersTodayJsonFile = new File(Utils.getDataDir(), "followersToday.json");
-    private File followersTodayTxtFile = new File(Utils.getDataDir(), "followersToday.txt");
-    private File numberOfFollowersFile = new File(Utils.getDataDir(), "followers.txt");
-    private File latestFollowerFile = new File(Utils.getDataDir(), "latestFollower.txt");
+    private Path followersTodayJsonFile = Utils.getDataDir().resolve("followersToday.json");
+    private Path followersTodayTxtFile = Utils.getDataDir().resolve("followersToday.txt");
+    private Path numberOfFollowersFile = Utils.getDataDir().resolve("followers.txt");
+    private Path latestFollowerFile = Utils.getDataDir().resolve("latestFollower.txt");
 
     private String followerInformation = null;
 
@@ -57,17 +58,17 @@ public class Followers {
         if (newStream) {
             try {
                 // Clear the followers today file if we are on a new stream
-                FileUtils.write(this.followersTodayJsonFile, "");
-                FileUtils.write(this.followersTodayTxtFile, "0");
+                FileUtils.write(this.followersTodayJsonFile.toFile(), "");
+                FileUtils.write(this.followersTodayTxtFile.toFile(), "0");
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
             }
         } else {
-            if (this.followersTodayJsonFile.exists()) {
+            if (Files.exists(this.followersTodayJsonFile)) {
                 try {
-                    this.followers = TwitchTools.GSON.fromJson(FileUtils.readFileToString(this
-                            .followersTodayJsonFile), new TypeToken<List<String>>() {
+                    this.followers = TwitchTools.GSON.fromJson(FileUtils.readFileToString(this.followersTodayJsonFile
+                            .toFile()), new TypeToken<List<String>>() {
 
                     }.getType());
                 } catch (IOException e) {
@@ -78,7 +79,7 @@ public class Followers {
 
             try {
                 DecimalFormat formatter = new DecimalFormat("#,###");
-                FileUtils.write(this.followersTodayTxtFile, formatter.format(this.followers.size()));
+                FileUtils.write(this.followersTodayTxtFile.toFile(), formatter.format(this.followers.size()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -148,8 +149,8 @@ public class Followers {
         }
 
         try {
-            FileUtils.write(this.followersTodayJsonFile, TwitchTools.GSON.toJson(this.followers));
-            FileUtils.write(this.latestFollowerFile, this.latestFollower);
+            FileUtils.write(this.followersTodayJsonFile.toFile(), TwitchTools.GSON.toJson(this.followers));
+            FileUtils.write(this.latestFollowerFile.toFile(), this.latestFollower);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -158,8 +159,8 @@ public class Followers {
     private void moreFollowers() {
         try {
             DecimalFormat formatter = new DecimalFormat("#,###");
-            FileUtils.write(this.followersTodayTxtFile, formatter.format(this.followers.size()));
-            FileUtils.write(this.numberOfFollowersFile, this.numberOfFollowers + "");
+            FileUtils.write(this.followersTodayTxtFile.toFile(), formatter.format(this.followers.size()));
+            FileUtils.write(this.numberOfFollowersFile.toFile(), this.numberOfFollowers + "");
         } catch (IOException e) {
             e.printStackTrace();
         }

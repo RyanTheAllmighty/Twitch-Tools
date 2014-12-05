@@ -19,13 +19,13 @@ package me.ryandowling;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.commons.io.FileUtils;
 
 import javax.swing.SwingUtilities;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 
 public class TwitchTools {
     public static Settings settings;
@@ -77,7 +77,7 @@ public class TwitchTools {
     }
 
     private static void loadSettings() {
-        if (!Utils.getSettingsFile().exists()) {
+        if (Files.exists(Utils.getSettingsFile())) {
             createDefaultSettingsFile();
         }
 
@@ -85,25 +85,27 @@ public class TwitchTools {
 
         while (settings == null && tries <= 10) {
             try {
-                FileReader reader = new FileReader(Utils.getSettingsFile());
-                settings = GSON.fromJson(reader, Settings.class);
-                reader.close();
-            } catch (Exception e) {
+                settings = GSON.fromJson(FileUtils.readFileToString(Utils.getSettingsFile().toFile()), Settings.class);
+            } catch (IOException e) {
                 e.printStackTrace();
-                createDefaultSettingsFile();
             }
 
             tries++;
         }
 
         if (settings == null) {
-            System.err.println("Error loading settings from " + Utils.getSettingsFile().getAbsolutePath());
+            System.err.println("Error loading settings from " + Utils.getSettingsFile().toAbsolutePath());
             System.exit(1);
         }
     }
 
     private static void createDefaultSettingsFile() {
-        Utils.getDataDir().mkdir();
+        try {
+            Files.createDirectories(Utils.getDataDir());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         settings = new Settings();
         settings.setMicrophoneStatus(new WindowDetails(new Dimension(200, 200), new Point(100, 100)));
         saveSettings();
@@ -111,9 +113,7 @@ public class TwitchTools {
 
     private static void saveSettings() {
         try {
-            FileWriter writer = new FileWriter(Utils.getSettingsFile());
-            writer.write(GSON.toJson(settings));
-            writer.close();
+            FileUtils.write(Utils.getSettingsFile().toFile(), GSON.toJson(settings));
         } catch (IOException e) {
             e.printStackTrace();
         }
