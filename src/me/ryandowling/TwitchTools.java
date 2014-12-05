@@ -77,7 +77,7 @@ public class TwitchTools {
     }
 
     private static void loadSettings() {
-        if (Files.exists(Utils.getSettingsFile())) {
+        if (!Files.exists(Utils.getSettingsFile())) {
             createDefaultSettingsFile();
         }
 

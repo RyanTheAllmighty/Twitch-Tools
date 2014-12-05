@@ -37,10 +37,10 @@ public class Followers {
 
     private List<String> followers = new ArrayList<String>();
 
-    private Path followersTodayJsonFile = Utils.getDataDir().resolve("followersToday.json");
-    private Path followersTodayTxtFile = Utils.getDataDir().resolve("followersToday.txt");
-    private Path numberOfFollowersFile = Utils.getDataDir().resolve("followers.txt");
-    private Path latestFollowerFile = Utils.getDataDir().resolve("latestFollower.txt");
+    private Path followersTodayJsonFile = Utils.getDataDir().resolve("followers/list-today.json");
+    private Path followersTodayTxtFile = Utils.getDataDir().resolve("followers/total-today.txt");
+    private Path numberOfFollowersFile = Utils.getDataDir().resolve("followers/total.txt");
+    private Path latestFollowerFile = Utils.getDataDir().resolve("followers/latest.txt");
 
     private String followerInformation = null;
 
