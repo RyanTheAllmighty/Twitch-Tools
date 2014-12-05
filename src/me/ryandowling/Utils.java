@@ -60,7 +60,7 @@ public class Utils {
     }
 
     public static Path getDataDir() {
-        return Paths.get(System.getProperty("user.dir"), "data");
+        return Paths.get(System.getProperty("user.dir"), "Data");
     }
 
     public static Path getSettingsFile() {
