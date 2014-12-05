@@ -62,17 +62,21 @@ public class Utils {
         return new ImageIcon(url).getImage();
     }
 
-    public static File getSettingsFile() {
+    public static File getDataDir() {
         if (OperatingSystem.getOS() == OperatingSystem.LINUX) {
             try {
                 return new File(TwitchTools.class.getProtectionDomain().getCodeSource().getLocation().toURI()
-                        .getSchemeSpecificPart()).getParentFile();
+                        .getSchemeSpecificPart(), "data").getParentFile();
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }
         }
 
-        return new File(System.getProperty("user.dir"), "settings.json");
+        return new File(System.getProperty("user.dir"), "data");
+    }
+
+    public static File getSettingsFile() {
+        return new File(getDataDir(), "settings.json");
     }
 
 }

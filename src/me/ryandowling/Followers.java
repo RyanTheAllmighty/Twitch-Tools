@@ -17,34 +17,72 @@
  */
 package me.ryandowling;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
-
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Followers {
     private String username;
     private int secondsToWait;
-    private File numberOfFollowersFile = new File("followers.txt");
-    private File latestFollowerFile = new File("latestfollower.txt");
+
+    private List<String> followers = new ArrayList<String>();
+
+    private File followersTodayJsonFile = new File(Utils.getDataDir(), "followersToday.json");
+    private File followersTodayTxtFile = new File(Utils.getDataDir(), "followersToday.txt");
+    private File numberOfFollowersFile = new File(Utils.getDataDir(), "followers.txt");
+    private File latestFollowerFile = new File(Utils.getDataDir(), "latestFollower.txt");
+
     private String followerInformation = null;
 
+    private String firstFollower;
     private String latestFollower;
     private long numberOfFollowers;
 
     private String tempLatestFollower;
     private long tempNumberOfFollowers;
 
-    public Followers(String username, int secondsToWait) {
+    public Followers(String username, int secondsToWait, boolean newStream) {
         this.username = username;
         this.secondsToWait = secondsToWait;
+
+        if (newStream) {
+            try {
+                // Clear the followers today file if we are on a new stream
+                FileUtils.write(this.followersTodayJsonFile, "");
+                FileUtils.write(this.followersTodayTxtFile, "0");
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        } else {
+            if (this.followersTodayJsonFile.exists()) {
+                try {
+                    this.followers = TwitchTools.GSON.fromJson(FileUtils.readFileToString(this
+                            .followersTodayJsonFile), new TypeToken<List<String>>() {
+
+                    }.getType());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+
+            try {
+                DecimalFormat formatter = new DecimalFormat("#,###");
+                FileUtils.write(this.followersTodayTxtFile, formatter.format(this.followers.size()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void run() {
@@ -87,40 +125,43 @@ public class Followers {
                 continue;
             }
 
+
+            if (this.firstFollower == null && this.latestFollower != null) {
+                this.firstFollower = this.latestFollower;
+            }
+
             if (!this.tempLatestFollower.equalsIgnoreCase(this.latestFollower)) {
-                PrintWriter writer = null;
-                try {
-                    writer = new PrintWriter(this.latestFollowerFile, "UTF-8");
-                    writer.println(this.latestFollower);
-                } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    sleep();
-                    continue;
-                } finally {
-                    if (writer != null) {
-                        writer.close();
-                    }
-                }
+                newFollower();
             }
 
             if (this.tempNumberOfFollowers != this.numberOfFollowers) {
-                PrintWriter writer = null;
-                try {
-                    writer = new PrintWriter(this.numberOfFollowersFile, "UTF-8");
-                    writer.println(this.numberOfFollowers);
-                } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    System.exit(0);
-                    sleep();
-                    continue;
-                } finally {
-                    if (writer != null) {
-                        writer.close();
-                    }
-                }
+                moreFollowers();
             }
 
             sleep();
+        }
+    }
+
+    private void newFollower() {
+        if (!this.firstFollower.equals(this.latestFollower)) {
+            this.followers.add(this.latestFollower);
+        }
+
+        try {
+            FileUtils.write(this.followersTodayJsonFile, TwitchTools.GSON.toJson(this.followers));
+            FileUtils.write(this.latestFollowerFile, this.latestFollower);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void moreFollowers() {
+        try {
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            FileUtils.write(this.followersTodayTxtFile, formatter.format(this.followers.size()));
+            FileUtils.write(this.numberOfFollowersFile, this.numberOfFollowers + "");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

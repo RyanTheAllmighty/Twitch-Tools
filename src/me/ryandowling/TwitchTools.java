@@ -29,7 +29,7 @@ import java.io.IOException;
 
 public class TwitchTools {
     public static Settings settings;
-    private static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public final static Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     public static void main(String[] args) {
         loadSettings();
@@ -42,11 +42,11 @@ public class TwitchTools {
         if (args.length == 0) {
             System.err.println("Invalid number of arguments specified!");
             System.exit(0);
-        } else if (args.length >= 1 && args.length <= 3) {
+        } else if (args.length >= 1 && args.length <= 4) {
             if (args[0].equalsIgnoreCase("Followers") || args[0].equalsIgnoreCase("MicrophoneStatus")) {
                 if (args[0].equalsIgnoreCase("Followers")) {
-                    if (args.length == 3) {
-                        new Followers(args[1], Integer.parseInt(args[2])).run();
+                    if (args.length == 4) {
+                        new Followers(args[1], Integer.parseInt(args[2]), Boolean.parseBoolean(args[3])).run();
                     } else {
                         System.err.println("Invalid number of arguments specified!");
                         System.exit(0);
@@ -86,7 +86,7 @@ public class TwitchTools {
         while (settings == null && tries <= 10) {
             try {
                 FileReader reader = new FileReader(Utils.getSettingsFile());
-                settings = gson.fromJson(reader, Settings.class);
+                settings = GSON.fromJson(reader, Settings.class);
                 reader.close();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -103,6 +103,7 @@ public class TwitchTools {
     }
 
     private static void createDefaultSettingsFile() {
+        Utils.getDataDir().mkdir();
         settings = new Settings();
         settings.setMicrophoneStatus(new WindowDetails(new Dimension(200, 200), new Point(100, 100)));
         saveSettings();
@@ -111,7 +112,7 @@ public class TwitchTools {
     private static void saveSettings() {
         try {
             FileWriter writer = new FileWriter(Utils.getSettingsFile());
-            writer.write(gson.toJson(settings));
+            writer.write(GSON.toJson(settings));
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
