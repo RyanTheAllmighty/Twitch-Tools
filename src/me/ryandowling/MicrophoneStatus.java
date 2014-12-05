@@ -98,7 +98,7 @@ public class MicrophoneStatus {
 
         if (microphones.length == 1) {
             microphoneToUse = microphones[0];
-        } else {
+        } else if (microphones.length > 1) {
             microphoneToUse = (String) JOptionPane.showInputDialog(new JFrame(), "Select a microphone to use",
                     "Select a microphone to use", JOptionPane.QUESTION_MESSAGE, null, microphones, microphones[0]);
         }
