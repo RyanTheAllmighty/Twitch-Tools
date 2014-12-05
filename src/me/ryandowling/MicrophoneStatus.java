@@ -104,7 +104,8 @@ public class MicrophoneStatus {
         }
 
         if (microphoneToUse == null) {
-            System.err.println("Couldn't find a microphone to use!");
+            JOptionPane.showMessageDialog(null, "Couldn't find a microphone to use!", "Error", JOptionPane
+                    .ERROR_MESSAGE);
             System.exit(1);
         }
 
@@ -225,6 +226,7 @@ public class MicrophoneStatus {
             this.sysTray.add(this.trayIcon);
         } catch (AWTException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Exception setting up tray menu!", "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
     }
@@ -278,7 +280,8 @@ public class MicrophoneStatus {
         }
 
         if (this.muteControl == null) {
-            System.err.println("Couldn't setup microphone!");
+            JOptionPane.showMessageDialog(null, "Couldn't find the mute control for the microphone!", "Error",
+                    JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
     }
@@ -292,7 +295,8 @@ public class MicrophoneStatus {
 
         if (this.windowDetails == null || this.windowDetails.getSize() == null || this.windowDetails.getPosition() ==
                 null) {
-            System.err.println("Settings file invalid!");
+            JOptionPane.showMessageDialog(null, "Settings file invalid! Please delete it and rerun the program.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
 
