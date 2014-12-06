@@ -17,7 +17,6 @@
  */
 package me.ryandowling;
 
-import com.google.gson.reflect.TypeToken;
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,25 +27,25 @@ import java.net.ConnectException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Followers {
     private String username;
     private int secondsToWait;
 
-    private List<String> followers = new ArrayList<String>();
-
-    private Path followersTodayJsonFile = Utils.getDataDir().resolve("followers/list-today.json");
+    private Path followersStartTodayTxrFile = Utils.getDataDir().resolve("followers/start-today.txt");
     private Path followersTodayTxtFile = Utils.getDataDir().resolve("followers/total-today.txt");
     private Path numberOfFollowersFile = Utils.getDataDir().resolve("followers/total.txt");
     private Path latestFollowerFile = Utils.getDataDir().resolve("followers/latest.txt");
 
     private String followerInformation = null;
 
+    private boolean newStream;
+    private boolean newStreamRun = false;
+
     private String firstFollower;
     private String latestFollower;
     private long numberOfFollowers;
+    private long startNumberOfFollowers;
 
     private String tempLatestFollower;
     private long tempNumberOfFollowers;
@@ -54,34 +53,25 @@ public class Followers {
     public Followers(String username, int secondsToWait, boolean newStream) {
         this.username = username;
         this.secondsToWait = secondsToWait;
+        this.newStream = newStream;
 
         if (newStream) {
             try {
                 // Clear the followers today file if we are on a new stream
-                FileUtils.write(this.followersTodayJsonFile.toFile(), "");
                 FileUtils.write(this.followersTodayTxtFile.toFile(), "0");
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
             }
         } else {
-            if (Files.exists(this.followersTodayJsonFile)) {
+            if (Files.exists(this.followersStartTodayTxrFile)) {
                 try {
-                    this.followers = TwitchTools.GSON.fromJson(FileUtils.readFileToString(this.followersTodayJsonFile
-                            .toFile()), new TypeToken<List<String>>() {
-
-                    }.getType());
+                    this.startNumberOfFollowers = TwitchTools.GSON.fromJson(FileUtils.readFileToString(this
+                            .followersStartTodayTxrFile.toFile()), Long.class);
                 } catch (IOException e) {
                     e.printStackTrace();
                     System.exit(1);
                 }
-            }
-
-            try {
-                DecimalFormat formatter = new DecimalFormat("#,###");
-                FileUtils.write(this.followersTodayTxtFile.toFile(), formatter.format(this.followers.size()));
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -125,6 +115,18 @@ public class Followers {
             }
 
 
+            if (this.newStream && !this.newStreamRun) {
+                try {
+                    // Save the number of followers at the start of the stream
+                    FileUtils.write(this.followersStartTodayTxrFile.toFile(), this.numberOfFollowers + "");
+                    this.startNumberOfFollowers = this.numberOfFollowers;
+                    this.newStreamRun = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+
             if (this.firstFollower == null && this.latestFollower != null) {
                 this.firstFollower = this.latestFollower;
             }
@@ -139,19 +141,14 @@ public class Followers {
 
             System.out.println("Latest follower is " + this.latestFollower);
             System.out.println("There are " + this.numberOfFollowers + " followers");
-            System.out.println("There are " + this.followers.size() + " followers today");
-
+            System.out.println("There have been " + (this.numberOfFollowers - this.startNumberOfFollowers) +
+                    " followers today");
             sleep();
         }
     }
 
     private void newFollower() {
-        if (!this.firstFollower.equals(this.latestFollower)) {
-            this.followers.add(this.latestFollower);
-        }
-
         try {
-            FileUtils.write(this.followersTodayJsonFile.toFile(), TwitchTools.GSON.toJson(this.followers));
             FileUtils.write(this.latestFollowerFile.toFile(), this.latestFollower);
         } catch (IOException e) {
             e.printStackTrace();
@@ -161,8 +158,9 @@ public class Followers {
     private void moreFollowers() {
         try {
             DecimalFormat formatter = new DecimalFormat("#,###");
-            FileUtils.write(this.followersTodayTxtFile.toFile(), formatter.format(this.followers.size()));
-            FileUtils.write(this.numberOfFollowersFile.toFile(), this.numberOfFollowers + "");
+            FileUtils.write(this.followersTodayTxtFile.toFile(), formatter.format(this.numberOfFollowers - this
+                    .startNumberOfFollowers));
+            FileUtils.write(this.numberOfFollowersFile.toFile(), formatter.format(this.numberOfFollowers));
         } catch (IOException e) {
             e.printStackTrace();
         }
