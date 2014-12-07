@@ -100,14 +100,13 @@ public class Followers {
             JSONParser parser = new JSONParser();
 
             this.tempLatestFollower = this.latestFollower;
-            this.tempNumberOfFollowers = this.numberOfFollowers;
 
             try {
                 Object obj = parser.parse(followerInformation);
                 JSONObject jsonObject = (JSONObject) obj;
                 JSONArray msg = (JSONArray) jsonObject.get("follows");
                 this.latestFollower = (String) ((JSONObject) ((JSONObject) msg.get(0)).get("user")).get("display_name");
-                this.numberOfFollowers = (Long) jsonObject.get("_total");
+                this.tempNumberOfFollowers = (Long) jsonObject.get("_total");
             } catch (Exception e) {
                 e.printStackTrace();
                 sleep();
@@ -131,11 +130,13 @@ public class Followers {
                 this.firstFollower = this.latestFollower;
             }
 
-            if (!this.tempLatestFollower.equalsIgnoreCase(this.latestFollower)) {
+            if (!this.tempLatestFollower.equalsIgnoreCase(this.latestFollower) && this.tempNumberOfFollowers > this
+                    .numberOfFollowers) {
                 newFollower();
             }
 
-            if (this.tempNumberOfFollowers != this.numberOfFollowers) {
+            if (this.tempNumberOfFollowers > this.numberOfFollowers) {
+                this.numberOfFollowers = this.tempNumberOfFollowers;
                 moreFollowers();
             }
 
