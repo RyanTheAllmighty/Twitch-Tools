@@ -44,7 +44,7 @@ public class TwitchTools {
             System.exit(0);
         } else if (args.length >= 1 && args.length <= 4) {
             if (args[0].equalsIgnoreCase("Followers") || args[0].equalsIgnoreCase("MicrophoneStatus") || args[0]
-                    .equalsIgnoreCase("NowPlayingConverter")) {
+                    .equalsIgnoreCase("NowPlayingConverter") || args[0].equalsIgnoreCase("FoobarControls")) {
                 if (args[0].equalsIgnoreCase("Followers")) {
                     if (args.length == 4) {
                         new Followers(args[1], Integer.parseInt(args[2]), Boolean.parseBoolean(args[3])).run();
@@ -81,6 +81,18 @@ public class TwitchTools {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("Arguments are: [delay in ms for updates]!");
                         System.err.println("For example: [100]!");
+                        System.exit(0);
+                    }
+                } else if (args[0].equalsIgnoreCase("FoobarControls")) {
+                    if (args.length == 1) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                new FoobarControls().run();
+                            }
+                        });
+                    } else {
+                        System.err.println("Invalid number of arguments specified!");
+                        System.err.println("There are no arguments to provide!");
                         System.exit(0);
                     }
                 }
