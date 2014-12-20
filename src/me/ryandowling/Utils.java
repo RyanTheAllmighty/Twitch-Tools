@@ -63,6 +63,18 @@ public class Utils {
         return Paths.get(System.getProperty("user.dir"), "Data");
     }
 
+    public static Path getNowPlayingRawPath() {
+        return Paths.get(System.getProperty("user.dir"), "nowplayingraw.txt");
+    }
+
+    public static Path getNowPlayingPath() {
+        return Paths.get(System.getProperty("user.dir"), "nowplaying.txt");
+    }
+
+    public static Path getNowPlayingFilePath() {
+        return Paths.get(System.getProperty("user.dir"), "nowplayingfile.txt");
+    }
+
     public static Path getSettingsFile() {
         return getDataDir().resolve("settings.json");
     }
