@@ -42,19 +42,33 @@ public class MusicCreditsGenerator {
                 case "html":
                     info = "<a href=\"" + website + "\">" + artist + "</a><br/>\n";
                     break;
-                case "htmli":
+                case "october":
                     try {
                         String response = Utils.urlToString("http://api.soundcloud.com/resolve" + ".json?url=" +
                                 URLEncoder.encode(website, "UTF-8") + "&client_id=" + TwitchTools.settings
                                 .getSoundCloudClientID());
 
-                        System.out.println(response);
+                        SoundCloudResolveAPIResponse resolve = TwitchTools.GSON.fromJson(response,
+                                SoundCloudResolveAPIResponse.class);
+
+                        if (resolve.getLocation() == null) {
+                            System.err.println("Error finding SoundCloud profile API link for " + website);
+                            System.exit(1);
+                        }
+
+                        response = Utils.urlToString(resolve.getLocation());
 
                         SoundCloudProfileAPIResponse profile = TwitchTools.GSON.fromJson(response,
                                 SoundCloudProfileAPIResponse.class);
 
-                        info = "<img src=\"" + profile.getAvatarUrl() + "\" alt=\"" + profile.getUsername() + "\" /> " +
-                                "<a href=\"" + website + "\">" + profile.getUsername() + "</a><br/>\n";
+                        info = "\t{% partial \"artist-panel\" artist=\"" + profile.getUsername() + "\" image=\"" +
+                                profile.getAvatarUrl() + "\" page=\"" + profile.getPermalinkUrl() + "\" %}\n";
+
+                        if ((artistsDone.size() + 1) == 1) {
+                            info = "<div class=\"row\">\n" + info;
+                        } else if (((artistsDone.size() + 1) % 3) == 0) {
+                            info = info + "</div>\n\n<div class=\"row\">\n";
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

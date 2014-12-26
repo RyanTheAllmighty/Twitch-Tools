@@ -81,12 +81,12 @@ public class TwitchTools {
                     if (args.length == 2) {
                         final String type = args[1];
 
-                        if (type.equalsIgnoreCase("html") || type.equalsIgnoreCase("htmli") || type.equalsIgnoreCase
-                                ("markdown")) {
+                        if (type.equalsIgnoreCase("html") || type.equalsIgnoreCase("october") || type
+                                .equalsIgnoreCase("markdown")) {
                             new MusicCreditsGenerator(type).run();
                         } else {
                             System.err.println("Invalid type argument specified!");
-                            System.err.println("Arguments are: [type of output to generate (html|htmli|markdown)]!");
+                            System.err.println("Arguments are: [type of output to generate (html|markdown|october)]!");
                             System.err.println("For example: [html]!");
                             System.exit(1);
                         }
