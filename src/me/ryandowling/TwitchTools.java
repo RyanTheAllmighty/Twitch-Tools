@@ -43,16 +43,15 @@ public class TwitchTools {
             System.err.println("Invalid number of arguments specified!");
             System.exit(0);
         } else if (args.length >= 1 && args.length <= 4) {
-            if (args[0].equalsIgnoreCase("Followers") || args[0].equalsIgnoreCase("MicrophoneStatus") || args[0]
-                    .equalsIgnoreCase("NowPlayingConverter") || args[0].equalsIgnoreCase("FoobarControls")) {
-                if (args[0].equalsIgnoreCase("Followers")) {
+            switch(args[0]) {
+                case "Followers":
                     if (args.length == 4) {
                         new Followers(args[1], Integer.parseInt(args[2]), Boolean.parseBoolean(args[3])).run();
                     } else {
                         System.err.println("Invalid number of arguments specified!");
-                        System.exit(0);
+                        System.exit(1);
                     }
-                } else if (args[0].equalsIgnoreCase("MicrophoneStatus")) {
+                case "MicrophoneStatus":
                     if (args.length == 3) {
                         final int delay = Integer.parseInt(args[1]);
                         final boolean guiDisplay = Boolean.parseBoolean(args[2]);
@@ -66,9 +65,9 @@ public class TwitchTools {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("Arguments are: [delay in ms for updates] [if the gui should show]!");
                         System.err.println("For example: [100] [true]!");
-                        System.exit(0);
+                        System.exit(1);
                     }
-                } else if (args[0].equalsIgnoreCase("NowPlayingConverter")) {
+                case "NowPlayingConverter":
                     if (args.length == 2) {
                         final int delay = Integer.parseInt(args[1]);
 
@@ -81,9 +80,9 @@ public class TwitchTools {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("Arguments are: [delay in ms for updates]!");
                         System.err.println("For example: [100]!");
-                        System.exit(0);
+                        System.exit(1);
                     }
-                } else if (args[0].equalsIgnoreCase("FoobarControls")) {
+                case "FoobarControls":
                     if (args.length == 1) {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
@@ -93,14 +92,15 @@ public class TwitchTools {
                     } else {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("There are no arguments to provide!");
-                        System.exit(0);
+                        System.exit(1);
                     }
-                }
-            } else {
-                System.err.println("Invalid tool name specified!");
-                System.err.println("Options are: Followers, MicrophoneStatus or NowPlayingConverter!");
-                System.exit(0);
+                default:
+                    System.err.println("Invalid tool name specified!");
+                    System.err.println("Options are: Followers, MicrophoneStatus or NowPlayingConverter!");
+                    System.exit(1);
             }
+
+            System.exit(0);
         }
     }
 
