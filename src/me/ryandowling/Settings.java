@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 public class Settings {
     private WindowDetails microphoneStatus;
     private String musicPath;
+    private String soundCloudClientID;
 
     public WindowDetails getMicrophoneStatus() {
         return microphoneStatus;
@@ -38,5 +39,9 @@ public class Settings {
         }
 
         return Paths.get(this.musicPath);
+    }
+
+    public String getSoundCloudClientID() {
+        return this.soundCloudClientID;
     }
 }

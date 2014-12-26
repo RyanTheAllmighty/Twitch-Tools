@@ -17,11 +17,15 @@
  */
 package me.ryandowling;
 
+import org.apache.commons.io.IOUtils;
+
 import javax.swing.ImageIcon;
 import java.awt.Image;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Path;
@@ -30,23 +34,16 @@ import java.nio.file.Paths;
 public class Utils {
 
     public static String urlToString(String url) throws IOException {
-        StringBuilder response = null;
-        URL urll = new URL(url);
-        URLConnection connection = urll.openConnection();
-        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.2; WOW64)");
-        connection.setConnectTimeout(5000);
-        BufferedReader in;
-        in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        response = new StringBuilder();
-        String inputLine;
+        InputStream in = new URL(url).openStream();
+        String response = null;
 
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
+        try {
+            response = IOUtils.toString(in);
+        } finally {
+            IOUtils.closeQuietly(in);
         }
 
-        in.close();
-
-        return response.toString();
+        return response;
     }
 
     public static Image getImage(String path) {

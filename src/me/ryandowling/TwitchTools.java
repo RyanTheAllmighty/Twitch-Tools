@@ -21,7 +21,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.commons.io.FileUtils;
 
-import javax.swing.SwingUtilities;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.io.IOException;
@@ -59,11 +58,7 @@ public class TwitchTools {
                         final int delay = Integer.parseInt(args[1]);
                         final boolean guiDisplay = Boolean.parseBoolean(args[2]);
 
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                new MicrophoneStatus(delay, guiDisplay);
-                            }
-                        });
+                        new MicrophoneStatus(delay, guiDisplay);
                     } else {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("Arguments are: [delay in ms for updates] [if the gui should show]!");
@@ -74,12 +69,7 @@ public class TwitchTools {
                 case "NowPlayingConverter":
                     if (args.length == 2) {
                         final int delay = Integer.parseInt(args[1]);
-
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                new NowPlayingConverter(delay).run();
-                            }
-                        });
+                        new NowPlayingConverter(delay).run();
                     } else {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("Arguments are: [delay in ms for updates]!");
@@ -91,15 +81,12 @@ public class TwitchTools {
                     if (args.length == 2) {
                         final String type = args[1];
 
-                        if (type.equalsIgnoreCase("html") || type.equalsIgnoreCase("markdown")) {
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    new MusicCreditsGenerator(type).run();
-                                }
-                            });
+                        if (type.equalsIgnoreCase("html") || type.equalsIgnoreCase("htmli") || type.equalsIgnoreCase
+                                ("markdown")) {
+                            new MusicCreditsGenerator(type).run();
                         } else {
                             System.err.println("Invalid type argument specified!");
-                            System.err.println("Arguments are: [type of output to generate (html|markdown)]!");
+                            System.err.println("Arguments are: [type of output to generate (html|htmli|markdown)]!");
                             System.err.println("For example: [html]!");
                             System.exit(1);
                         }
@@ -112,11 +99,7 @@ public class TwitchTools {
                     break;
                 case "FoobarControls":
                     if (args.length == 1) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            public void run() {
-                                new FoobarControls().run();
-                            }
-                        });
+                        new FoobarControls().run();
                     } else {
                         System.err.println("Invalid number of arguments specified!");
                         System.err.println("There are no arguments to provide!");
@@ -127,8 +110,6 @@ public class TwitchTools {
                     System.err.println("Invalid tool name specified!");
                     System.exit(1);
             }
-
-            System.exit(0);
         }
     }
 
