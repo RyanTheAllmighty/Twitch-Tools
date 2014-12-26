@@ -17,8 +17,12 @@
  */
 package me.ryandowling;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class Settings {
     private WindowDetails microphoneStatus;
+    private String musicPath;
 
     public WindowDetails getMicrophoneStatus() {
         return microphoneStatus;
@@ -26,5 +30,13 @@ public class Settings {
 
     public void setMicrophoneStatus(WindowDetails microphoneStatus) {
         this.microphoneStatus = microphoneStatus;
+    }
+
+    public Path getMusicPath() {
+        if (this.musicPath == null) {
+            this.musicPath = Paths.get(System.getProperty("user.dir"), "music").toString();
+        }
+
+        return Paths.get(this.musicPath);
     }
 }

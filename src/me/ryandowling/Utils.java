@@ -79,4 +79,7 @@ public class Utils {
         return getDataDir().resolve("settings.json");
     }
 
+    public static Path getMusicPath() {
+        return TwitchTools.settings.getMusicPath();
+    }
 }

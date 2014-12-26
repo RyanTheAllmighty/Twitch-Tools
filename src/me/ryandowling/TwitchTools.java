@@ -33,17 +33,19 @@ public class TwitchTools {
 
     public static void main(String[] args) {
         loadSettings();
+
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 saveSettings();
             }
         });
+
         if (args.length == 0) {
             System.err.println("Invalid number of arguments specified!");
-            System.exit(0);
+            System.exit(1);
         } else if (args.length >= 1 && args.length <= 4) {
-            switch(args[0]) {
+            switch (args[0]) {
                 case "Followers":
                     if (args.length == 4) {
                         new Followers(args[1], Integer.parseInt(args[2]), Boolean.parseBoolean(args[3])).run();
@@ -51,6 +53,7 @@ public class TwitchTools {
                         System.err.println("Invalid number of arguments specified!");
                         System.exit(1);
                     }
+                    break;
                 case "MicrophoneStatus":
                     if (args.length == 3) {
                         final int delay = Integer.parseInt(args[1]);
@@ -67,6 +70,7 @@ public class TwitchTools {
                         System.err.println("For example: [100] [true]!");
                         System.exit(1);
                     }
+                    break;
                 case "NowPlayingConverter":
                     if (args.length == 2) {
                         final int delay = Integer.parseInt(args[1]);
@@ -82,6 +86,30 @@ public class TwitchTools {
                         System.err.println("For example: [100]!");
                         System.exit(1);
                     }
+                    break;
+                case "MusicCreditsGenerator":
+                    if (args.length == 2) {
+                        final String type = args[1];
+
+                        if (type.equalsIgnoreCase("html") || type.equalsIgnoreCase("markdown")) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    new MusicCreditsGenerator(type).run();
+                                }
+                            });
+                        } else {
+                            System.err.println("Invalid type argument specified!");
+                            System.err.println("Arguments are: [type of output to generate (html|markdown)]!");
+                            System.err.println("For example: [html]!");
+                            System.exit(1);
+                        }
+                    } else {
+                        System.err.println("Invalid number of arguments specified!");
+                        System.err.println("Arguments are: [delay in ms for updates]!");
+                        System.err.println("For example: [100]!");
+                        System.exit(1);
+                    }
+                    break;
                 case "FoobarControls":
                     if (args.length == 1) {
                         SwingUtilities.invokeLater(new Runnable() {
@@ -94,9 +122,9 @@ public class TwitchTools {
                         System.err.println("There are no arguments to provide!");
                         System.exit(1);
                     }
+                    break;
                 default:
                     System.err.println("Invalid tool name specified!");
-                    System.err.println("Options are: Followers, MicrophoneStatus or NowPlayingConverter!");
                     System.exit(1);
             }
 
