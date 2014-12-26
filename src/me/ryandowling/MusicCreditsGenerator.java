@@ -38,7 +38,7 @@ public class MusicCreditsGenerator {
 
             switch (this.type) {
                 case "html":
-                    info = "<a href=\"" + website + "\">" + artist + "</a><br/>";
+                    info = "<a href=\"" + website + "\">" + artist + "</a><br/>\n";
                     break;
                 case "markdown":
                     info = "[" + artist + "](" + website + ")  \n";
