@@ -24,6 +24,8 @@ public class Settings {
     private WindowDetails microphoneStatus;
     private String musicPath;
     private String soundCloudClientID;
+    private String steamApiKey;
+    private String steamPlayerID;
 
     public WindowDetails getMicrophoneStatus() {
         return microphoneStatus;
@@ -43,5 +45,13 @@ public class Settings {
 
     public String getSoundCloudClientID() {
         return this.soundCloudClientID;
+    }
+
+    public String getSteamApiKey() {
+        return this.steamApiKey;
+    }
+
+    public String getSteamPlayerID() {
+        return this.steamPlayerID;
     }
 }

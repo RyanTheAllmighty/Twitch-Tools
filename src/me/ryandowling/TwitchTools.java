@@ -97,6 +97,25 @@ public class TwitchTools {
                         System.exit(1);
                     }
                     break;
+                case "SteamGamesGenerator":
+                    if (args.length == 2) {
+                        final String type = args[1];
+
+                        if (type.equalsIgnoreCase("october")) {
+                            new SteamGamesGenerator(type).run();
+                        } else {
+                            System.err.println("Invalid type argument specified!");
+                            System.err.println("Arguments are: [type of output to generate (october)]!");
+                            System.err.println("For example: [october]!");
+                            System.exit(1);
+                        }
+                    } else {
+                        System.err.println("Invalid number of arguments specified!");
+                        System.err.println("Arguments are: [delay in ms for updates]!");
+                        System.err.println("For example: [100]!");
+                        System.exit(1);
+                    }
+                    break;
                 case "FoobarControls":
                     if (args.length == 1) {
                         new FoobarControls().run();
